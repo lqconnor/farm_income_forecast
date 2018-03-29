@@ -39,3 +39,8 @@ ggplot(data = inc_fcst, aes(x=feb_rev, y=aug_est)) +
 ggplot(data = inc_fcst, aes(x=feb_rev, y=final_est)) +
   geom_point() +
   geom_smooth(method = lm, se = FALSE)
+
+
+# Test for biasedness
+fit <- lm(`Net farm income estimate` ~ `February forecast`, data = inc_fcst)
+summary(fit)
