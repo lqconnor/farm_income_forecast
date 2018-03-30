@@ -13,7 +13,7 @@ library(magrittr)
 library(ggplot2)
 
 # Data Import ---------------------------------
-wasde <- read_csv("./Data/psd_grains_pulses.csv")
+#wasde <- read_csv("./Data/psd_grains_pulses.csv")
 inc_fcst <- read_csv("./Data/forecasts.csv")
 
 # Variable Gen --------------------------------
@@ -31,23 +31,33 @@ inc_fcst <- mutate(inc_fcst, aug_rev = (`August forecast` - `February forecast`)
 
 ggplot(data = inc_fcst, aes(x=aug_rev, y=nov_rev)) +
   geom_point() +
-  geom_smooth(method = lm, se = FALSE)
+  geom_smooth(method = lm, se = TRUE) +
+  labs(x = "Change at August Forecast", y = "Change at November Forecast")
+ggsave("plot1.jpg")
 
 ggplot(data = inc_fcst, aes(x=nov_rev, y=feb_rev)) +
   geom_point() +
-  geom_smooth(method = lm, se = FALSE)
+  geom_smooth(method = lm, se = TRUE) +
+  labs(x = "Change at November Forecast", y = "Change at February (t+1) Forecast")
+ggsave("plot2.jpg")
 
 ggplot(data = inc_fcst, aes(x=feb_rev, y=aug_est)) +
   geom_point() +
-  geom_smooth(method = lm, se = FALSE)
+  geom_smooth(method = lm, se = TRUE) +
+  labs(x = "Change at February (t+1) Forecast", y = "Change at August Estimate")
+ggsave("plot3.jpg")
 
 ggplot(data = inc_fcst, aes(x=feb_rev, y=final_est)) +
   geom_point() +
-  geom_smooth(method = lm, se = FALSE)
+  geom_smooth(method = lm, se = TRUE) +
+  labs(x = "Change at February (t+1) Forecast", y = "Change at Final Estimate")
+ggsave("plot4.jpg")
 
 ggplot(data = inc_fcst, aes(x=aug_est, y=final_est)) +
   geom_point() +
-  geom_smooth(method = lm, se = FALSE)
+  geom_smooth(method = lm, se = TRUE) +
+  labs(x = "Change at August Estimate", y = "Change at Final Estimate")
+ggsave("plot5.jpg")
 
 
 # Test for biasedness -------------------------------------------------------------
@@ -60,17 +70,21 @@ inc_fcst %<>%
 
 # Holden-Peel Test
 
-fit <- lm(ehat_feb ~ 1, data = inc_fcst)
-summary(fit)
+fit1 <- lm(ehat_feb ~ 1, data = inc_fcst)
+summary(fit1)
 
-fit <- lm(ehat_aug ~ 1, data = inc_fcst)
-summary(fit)
+fit2 <- lm(ehat_aug ~ 1, data = inc_fcst)
+summary(fit2)
 
-fit <- lm(ehat_nov ~ 1, data = inc_fcst)
-summary(fit)
+fit3 <- lm(ehat_nov ~ 1, data = inc_fcst)
+summary(fit3)
 
-fit <- lm(ehat_feb1 ~ 1, data = inc_fcst)
-summary(fit)
+fit4 <- lm(ehat_feb1 ~ 1, data = inc_fcst)
+summary(fit4)
 
-fit <- lm(ehat_init ~ 1, data = inc_fcst)
-summary(fit)
+fit5 <- lm(ehat_init ~ 1, data = inc_fcst)
+summary(fit5)
+
+# Output Tables --------------------------------------------------------------------
+stargazer(fit1, fit2, fit3, fit4, fit5, title = "Biasedness Analysis",
+          dep.var.labels = c("February Forecast", "August Forecast", "November Forecast", "February (t+1) Forecast", "August (t+1) Estimate"))
