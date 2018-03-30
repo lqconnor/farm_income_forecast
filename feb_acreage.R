@@ -7,6 +7,7 @@ cat("\f")
 getwd()
 
 library(tidyverse)
+library(purrr)
 library(stringr)
 library(magrittr)
 library(ggplot2)
@@ -21,7 +22,7 @@ inc_fcst <- mutate(inc_fcst, aug_rev = (`August forecast` - `February forecast`)
                    feb_rev = (`February(t+1) forecast` - `November forecast`)/`November forecast`,                     # Change in February(t+1) update on November forecast 
                    aug_est = (`August (t + 1) "estimate"` - `February(t+1) forecast`)/`February(t+1) forecast`,        # Change in August first estimate on February(t+1) forecast
                    final_est = (`Net farm income estimate` - `February(t+1) forecast`)/`February(t+1) forecast`,       # Change in final estimate on February(t+1) forecast
-                   aug_est = (`Net farm income estimate` - `August (t + 1) "estimate"`)/`August (t + 1) "estimate"`)   # Change in final estimate on February(t+1) forecast
+                   aug_est = (`Net farm income estimate` - `August (t + 1) "estimate"`)/`August (t + 1) "estimate"`)   # Change in final estimate on August(t+1) estimate
 
 # ----------------------------------------------------------------------------------
 # Plot correlations of changes in consecutive updates. 
