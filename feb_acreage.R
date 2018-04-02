@@ -11,6 +11,7 @@ library(purrr)
 library(stringr)
 library(magrittr)
 library(ggplot2)
+library(stargazer)
 
 # Data Import ---------------------------------
 #wasde <- read_csv("./Data/psd_grains_pulses.csv")
@@ -21,8 +22,8 @@ inc_fcst <- mutate(inc_fcst, aug_rev = (`August forecast` - `February forecast`)
                    nov_rev = (`November forecast` - `August forecast`)/`August forecast`,                              # Change in November update on August forecast
                    feb_rev = (`February(t+1) forecast` - `November forecast`)/`November forecast`,                     # Change in February(t+1) update on November forecast 
                    aug_est = (`August (t + 1) "estimate"` - `February(t+1) forecast`)/`February(t+1) forecast`,        # Change in August first estimate on February(t+1) forecast
-                   final_est = (`Net farm income estimate` - `February(t+1) forecast`)/`February(t+1) forecast`,       # Change in final estimate on February(t+1) forecast
-                   aug_est = (`Net farm income estimate` - `August (t + 1) "estimate"`)/`August (t + 1) "estimate"`)   # Change in final estimate on August(t+1) estimate
+                   #final_est = (`Net farm income estimate` - `February(t+1) forecast`)/`February(t+1) forecast`,       # Change in final estimate on February(t+1) forecast
+                   final_est = (`Net farm income estimate` - `August (t + 1) "estimate"`)/`August (t + 1) "estimate"`)   # Change in final estimate on August(t+1) estimate
 
 # ----------------------------------------------------------------------------------
 # Plot correlations of changes in consecutive updates. 
@@ -86,5 +87,5 @@ fit5 <- lm(ehat_init ~ 1, data = inc_fcst)
 summary(fit5)
 
 # Output Tables --------------------------------------------------------------------
-stargazer(fit1, fit2, fit3, fit4, fit5, title = "Biasedness Analysis",
+stargazer(fit1, fit2, fit3, fit4, fit5, title = "Biasedness Test",
           dep.var.labels = c("February Forecast", "August Forecast", "November Forecast", "February (t+1) Forecast", "August (t+1) Estimate"))
