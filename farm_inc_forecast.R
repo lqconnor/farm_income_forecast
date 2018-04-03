@@ -16,7 +16,7 @@ library(stargazer)
 # Data Import ---------------------------------
 #wasde <- read_csv("./Data/psd_grains_pulses.csv")
 inc_fcst <- read_csv("./Data/forecasts.csv")
-csh_fcst <- read_csv("./Data/forecasts_cash.csv")
+#csh_fcst <- read_csv("./Data/forecasts_cash.csv")
 
 # Variable Gen --------------------------------
 inc_fcst <- mutate(inc_fcst, aug_rev = (`August forecast` - `February forecast`)/`February forecast`,                    # Change in August update on February forecast
@@ -68,7 +68,11 @@ inc_fcst %<>%
   mutate(ehat_aug = `Net farm income estimate` - `August forecast`) %>%
   mutate(ehat_nov = `Net farm income estimate` - `November forecast`) %>%
   mutate(ehat_feb1 = `Net farm income estimate` - `February(t+1) forecast`) %>%
-  mutate(ehat_init = `Net farm income estimate` - `August (t + 1) "estimate"`)
+  mutate(ehat_init = `Net farm income estimate` - `August (t + 1) "estimate"`) %>%
+  mutate(lag = lag(`Net farm income estimate`)) %>%
+  mutate(dif = `Net farm income estimate` - lead(`Net farm income estimate`)) %>%
+  mutate(t = `Reference Year` - 1974) %>%
+  mutate(t2 = t^2)
 
 # Holden-Peel Test
 
@@ -92,3 +96,15 @@ stargazer(fit1, fit2, fit3, fit4, fit5, title = "Biasedness Test",
           dep.var.labels = c("February Forecast", "August Forecast", 
                              "November Forecast", "February (t+1) Forecast", 
                              "August (t+1) Estimate"))
+
+# Forecast Accuracy ----------------------------------------------------------------
+acc <- lm(abs(ehat_aug) ~ `Reference Year`, data = inc_fcst)
+summary(acc)
+
+trend <- lm(`Net farm income estimate` ~ t, data = inc_fcst)
+summary(trend)
+
+inc_fcst$var <- trend$resid^2
+
+var <- lm(var ~ `Reference Year`, data = inc_fcst)
+summary(var)
