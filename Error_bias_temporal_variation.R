@@ -29,17 +29,18 @@ inc_fcst %<>%
   mutate(t2 = t^2)
 
 # Holden-Peel Test ---------------------------------------------------------------------
-fit <- list()
-tile <- which(str_detect(colnames(inc_fcst),"ehat"))
+fit <- list()                                                 # Create vector for lm() output
+tile <- which(str_detect(colnames(inc_fcst),"ehat"))          # Extract column indexes with forecast error variables in the inc_fcst tibble
+
 for (i in seq_along(tile)){
   
-  index <- tile[i]
-  fit[[i]] <- lm(inc_fcst[[index]]~1, data = inc_fcst)
+  index <- tile[i]                                            # Get column index of forecast variables from tile 
+  fit[[i]] <- lm(inc_fcst[[index]]~1, data = inc_fcst)        # Perform intercept regression on each forecast error column. Put output into fit
 
 }
 
-fit %>%
-map(summary)
+fit %>%                                                       
+map(summary)                                                  # Iterate through the columns of fit to summarize the output from lm()
 
 # Output Tables --------------------------------------------------------------------
 stargazer(fit, title = "Biasedness Test",
