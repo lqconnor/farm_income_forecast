@@ -24,21 +24,20 @@ inc_fcst %<>%
   mutate(ehat_nov = `Net farm income estimate` - `November forecast`) %>%
   mutate(ehat_feb1 = `Net farm income estimate` - `February(t+1) forecast`) %>%
   mutate(ehat_init = `Net farm income estimate` - `August (t + 1) "estimate"`) %>%
-  mutate(lag = lag(`Net farm income estimate`)) %>%
   mutate(dif = `Net farm income estimate` - lead(`Net farm income estimate`)) %>%
   mutate(t = `Reference Year` - 1974) %>%
   mutate(t2 = t^2)
 
 # Holden-Peel Test ---------------------------------------------------------------------
-subset <- inc_fcst[grepl("ehat", names(inc_fcst))]
-subset <- names(subset)
 fit <- list()
-
-for (i in seq_along(subset)){
+tile <- which(str_detect(colnames(inc_fcst),"ehat"))
+for (i in seq_along(tile)){
   
-  fit[[i]] <- lm(paste(subset[i],"~1"), data = inc_fcst)
+  index <- tile[i]
+  fit[[i]] <- lm(inc_fcst[[index]]~1, data = inc_fcst)
 
 }
+
 fit %>%
 map(summary)
 
