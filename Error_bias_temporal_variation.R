@@ -1,7 +1,7 @@
 # Farm Income Forecast Project.
 # The existence of smoothing in farm income forecasts
 
-#Pre - Amble ------------------------------
+# Pre - Amble ------------------------------
 rm(list = ls())
 cat("\f")
 getwd()
@@ -39,25 +39,11 @@ for (i in seq_along(subset)){
   fit[[i]] <- lm(paste(subset[i],"~1"), data = inc_fcst)
 
 }
-#-----------------------------------------------------------------------------------------
-
-fit1 <- lm(ehat_feb ~ 1, data = inc_fcst)
-summary(fit1)
-
-fit2 <- lm(ehat_aug ~ 1, data = inc_fcst)
-summary(fit2)
-
-fit3 <- lm(ehat_nov ~ 1, data = inc_fcst)
-summary(fit3)
-
-fit4 <- lm(ehat_feb1 ~ 1, data = inc_fcst)
-summary(fit4)
-
-fit5 <- lm(ehat_init ~ 1, data = inc_fcst)
-summary(fit5)
+fit %>%
+map(summary)
 
 # Output Tables --------------------------------------------------------------------
-stargazer(fit1, fit2, fit3, fit4, fit5, title = "Biasedness Test",
+stargazer(fit, title = "Biasedness Test",
           dep.var.labels = c("February Forecast", "August Forecast", 
                              "November Forecast", "February (t+1) Forecast", 
                              "August (t+1) Estimate"))
