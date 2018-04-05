@@ -1,0 +1,81 @@
+# Farm Income Forecast Project.
+# The existence of smoothing in farm income forecasts
+
+#Pre - Amble ------------------------------
+rm(list = ls())
+cat("\f")
+getwd()
+
+library(tidyverse)
+library(purrr)
+library(stringr)
+library(magrittr)
+library(ggplot2)
+library(stargazer)
+
+# Data Import ---------------------------------
+#wasde <- read_csv("./Data/psd_grains_pulses.csv")
+inc_fcst <- read_csv("./Data/forecasts.csv")
+
+# Test for biasedness -------------------------------------------------------------
+inc_fcst %<>%
+  mutate(ehat_feb = `Net farm income estimate` - `February forecast`) %>%
+  mutate(ehat_aug = `Net farm income estimate` - `August forecast`) %>%
+  mutate(ehat_nov = `Net farm income estimate` - `November forecast`) %>%
+  mutate(ehat_feb1 = `Net farm income estimate` - `February(t+1) forecast`) %>%
+  mutate(ehat_init = `Net farm income estimate` - `August (t + 1) "estimate"`) %>%
+  mutate(lag = lag(`Net farm income estimate`)) %>%
+  mutate(dif = `Net farm income estimate` - lead(`Net farm income estimate`)) %>%
+  mutate(t = `Reference Year` - 1974) %>%
+  mutate(t2 = t^2)
+
+# Holden-Peel Test ---------------------------------------------------------------------
+subset <- inc_fcst[grepl("ehat", names(inc_fcst))]
+subset <- names(subset)
+fit <- list()
+
+for (i in seq_along(subset)){
+  
+  fit[[i]] <- lm(paste(subset[i],"~1"), data = inc_fcst)
+
+}
+#-----------------------------------------------------------------------------------------
+
+fit1 <- lm(ehat_feb ~ 1, data = inc_fcst)
+summary(fit1)
+
+fit2 <- lm(ehat_aug ~ 1, data = inc_fcst)
+summary(fit2)
+
+fit3 <- lm(ehat_nov ~ 1, data = inc_fcst)
+summary(fit3)
+
+fit4 <- lm(ehat_feb1 ~ 1, data = inc_fcst)
+summary(fit4)
+
+fit5 <- lm(ehat_init ~ 1, data = inc_fcst)
+summary(fit5)
+
+# Output Tables --------------------------------------------------------------------
+stargazer(fit1, fit2, fit3, fit4, fit5, title = "Biasedness Test",
+          dep.var.labels = c("February Forecast", "August Forecast", 
+                             "November Forecast", "February (t+1) Forecast", 
+                             "August (t+1) Estimate"))
+
+# Forecast Accuracy ----------------------------------------------------------------
+# Tests to be carried out:
+# 1. Has the forecast accuracy improved over time?
+# 2. Is there a difference in the error pattern between earlier (February (t)) vs later
+#    (February (t+1) forecasts?). Are some more consistent, less biased etc.
+# 3. Changes in the magnitude and variance of forecasts over time.
+
+acc <- lm(abs(ehat_aug) ~ `Reference Year`, data = inc_fcst)
+summary(acc)
+
+trend <- lm(`Net farm income estimate` ~ t, data = inc_fcst)
+summary(trend)
+
+inc_fcst$var <- trend$resid^2
+
+var <- lm(var ~ `Reference Year`, data = inc_fcst)
+summary(var)
