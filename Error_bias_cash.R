@@ -1,7 +1,7 @@
 # Farm Income Forecast Project.
 # The existence of smoothing in farm income forecasts
 
-# Pre - Amble ------------------------------
+# Pre - Amble -------------------------------------------------------------------------
 rm(list = ls())
 cat("\f")
 getwd()
@@ -13,18 +13,17 @@ library(magrittr)
 library(ggplot2)
 library(stargazer)
 
-# Data Import ---------------------------------
-#wasde <- read_csv("./Data/psd_grains_pulses.csv")
-inc_fcst <- read_csv("./Data/forecasts.csv")
+# Data Import -------------------------------------------------------------------------
+inc_fcst <- read_csv("./Data/forecasts_cash.csv")
 
-# Test for biasedness -------------------------------------------------------------
+# Test for biasedness -----------------------------------------------------------------
 inc_fcst %<>%
-  mutate(ehat_feb = `Net farm income estimate` - `February forecast`) %>%
-  mutate(ehat_aug = `Net farm income estimate` - `August forecast`) %>%
-  mutate(ehat_nov = `Net farm income estimate` - `November forecast`) %>%
-  mutate(ehat_feb1 = `Net farm income estimate` - `February(t+1) forecast`) %>%
-  mutate(ehat_init = `Net farm income estimate` - `August (t + 1) "estimate"`) %>%
-  mutate(dif = `Net farm income estimate` - lead(`Net farm income estimate`)) %>%
+  mutate(ehat_feb = `Net cash income estimate` - `February forecast`) %>%
+  mutate(ehat_aug = `Net cash income estimate` - `August forecast`) %>%
+  mutate(ehat_nov = `Net cash income estimate` - `November forecast`) %>%
+  mutate(ehat_feb1 = `Net cash income estimate` - `February(t+1) forecast`) %>%
+  mutate(ehat_init = `Net cash income estimate` - `August (t + 1) "estimate"`) %>%
+  mutate(dif = `Net cash income estimate` - lead(`Net cash income estimate`)) %>%
   mutate(t = `Reference Year` - 1974) %>%
   mutate(t2 = t^2)
 
@@ -36,19 +35,19 @@ for (i in seq_along(tile)){
   
   index <- tile[i]                                            # Get column index of forecast variables from tile 
   fit[[i]] <- lm(inc_fcst[[index]]~1, data = inc_fcst)        # Perform intercept regression on each forecast error column. Put output into fit
-
+  
 }
 
 fit %>%                                                       
-  map(summary)                                                  # Iterate through the columns of fit to summarize the output from lm()
+  map(summary)                                                # Iterate through the columns of fit to summarize the output from lm()
 
-# Output Tables --------------------------------------------------------------------
+# Output Tables -------------------------------------------------------------------------
 stargazer(fit, title = "Biasedness Test",
           dep.var.labels = c("February Forecast", "August Forecast", 
                              "November Forecast", "February (t+1) Forecast", 
                              "August (t+1) Estimate"))
 
-# Forecast Accuracy ----------------------------------------------------------------
+# Forecast Accuracy ---------------------------------------------------------------------
 # Tests to be carried out:
 # 1. Has the forecast accuracy improved over time?
 # 2. Is there a difference in the error pattern between earlier (February (t)) vs later
@@ -58,7 +57,9 @@ stargazer(fit, title = "Biasedness Test",
 acc <- lm(abs(ehat_aug) ~ `Reference Year`, data = inc_fcst)
 summary(acc)
 
-trend <- lm(`Net farm income estimate` ~ t, data = inc_fcst)
+inc_fcst$`August (t + 1) "estimate"`[is.na(inc_fcst$`August (t + 1) "estimate"`)] <- inc_fcst$`Net cash income estimate`[is.na(inc_fcst$`August (t + 1) "estimate"`)]
+
+trend <- lm(`August (t + 1) "estimate"` ~ t, data = inc_fcst)
 summary(trend)
 
 inc_fcst$var <- trend$resid^2
