@@ -29,10 +29,12 @@ inc_fcst %<>%
   mutate(t2 = t^2)
 
 # Holden-Peel Test ---------------------------------------------------------------------
+fit <- list()
 tile <- which(str_detect(colnames(inc_fcst),"ehat"))
 for (i in seq_along(tile)){
   
-  fit[[i]] <- lm(inc_fcst[[tile[i]]]~1, data = inc_fcst)
+  index <- tile[i]
+  fit[[i]] <- lm(inc_fcst[[index]]~1, data = inc_fcst)
 
 }
 
