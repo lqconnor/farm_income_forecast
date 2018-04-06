@@ -20,12 +20,16 @@ inc_fcst <- read_csv("./Data/forecasts_cash.csv")
 
 ####################################################################################################################
 # Code Generalization. Catch file unique identifiers -------------------------------------------------------------
-index <- which(str_detect(colnames(inc_fcst),"Net"))                                   # Catches the variable attached to the final cash/farm income estimate
+
+# Catches the variable attached to the final cash/farm income estimate
+index <- which(str_detect(colnames(inc_fcst),"Net"))                                   
 income_estimate <- inc_fcst[[index]]
 
-fl_source <- names(inc_fcst)                                                           # Catch file source descriptor
+# Catch file source descriptor
+fl_source <- names(inc_fcst)                                                           
 fl_source <- fl_source[grepl("Net", fl_source)]
 fl_source <- sub("^[[:alpha:]]+[[:blank:]]([a-z]+)[[:blank:]].+$","\\1", fl_source)    # Regular Expression to extract cash or farm portion of string
+
 ####################################################################################################################
 
 # Variable Gen --------------------------------
