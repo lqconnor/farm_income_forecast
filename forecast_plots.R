@@ -38,29 +38,29 @@ ggplot(data = inc_fcst, aes(x=aug_rev, y=nov_rev)) +
   geom_point() +
   geom_smooth(method = lm, se = TRUE) +
   labs(x = "Change at August Forecast", y = "Change at November Forecast")
-ggsave("plot1.jpg")
+ggsave("Plots/plot1.jpg")
 
 ggplot(data = inc_fcst, aes(x=nov_rev, y=feb_rev)) +
   geom_point() +
   geom_smooth(method = lm, se = TRUE) +
   labs(x = "Change at November Forecast", y = "Change at February (t+1) Forecast")
-ggsave("plot2.jpg")
+ggsave("Plots/plot2.jpg")
 
 ggplot(data = inc_fcst, aes(x=feb_rev, y=aug_est)) +
   geom_point() +
   geom_smooth(method = lm, se = TRUE) +
   labs(x = "Change at February (t+1) Forecast", y = "Change at August Estimate")
-ggsave("plot3.jpg")
+ggsave("Plots/plot3.jpg")
 
 ggplot(data = inc_fcst, aes(x=feb_rev, y=final_est)) +
   geom_point() +
   geom_smooth(method = lm, se = TRUE) +
   labs(x = "Change at February (t+1) Forecast", y = "Change at Final Estimate")
-ggsave("plot4.jpg")
+ggsave("Plots/plot4.jpg")
 
 ggplot(data = inc_fcst, aes(x=aug_est, y=final_est)) +
   geom_point() +
   geom_smooth(method = lm, se = TRUE) +
   labs(x = "Change at August Estimate", y = "Change at Final Estimate")
-ggsave("plot5.jpg")
+ggsave("Plots/plot5.jpg")
 
