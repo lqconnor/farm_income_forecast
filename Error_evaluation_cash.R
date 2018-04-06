@@ -17,22 +17,25 @@ library(stargazer)
 #wasde <- read_csv("./Data/psd_grains_pulses.csv")
 inc_fcst <- read_csv("./Data/forecasts_cash.csv")
 
+index <- which(str_detect(colnames(inc_fcst),"Net"))        # Catches the variable attached to the final estimate cash/farm income estimate
+income_estimate <- inc_fcst[[index]]
+
 # Revision Variable Gen -----------------------------------------------------------
 inc_fcst <- mutate(inc_fcst, 
                    aug_rev = (`August forecast` - `February forecast`)/`February forecast`,                              # Change in August update on February forecast
                    nov_rev = (`November forecast` - `August forecast`)/`August forecast`,                                # Change in November update on August forecast
                    feb_rev = (`February(t+1) forecast` - `November forecast`)/`November forecast`,                       # Change in February(t+1) update on November forecast 
                    aug_est = (`August (t + 1) "estimate"` - `February(t+1) forecast`)/`February(t+1) forecast`,          # Change in August first estimate on February(t+1) forecast
-                   final_est = (`Net cash income estimate` - `August (t + 1) "estimate"`)/`August (t + 1) "estimate"`)   # Change in final estimate on August(t+1) estimate
+                   final_est = (income_estimate - `August (t + 1) "estimate"`)/`August (t + 1) "estimate"`)              # Change in final estimate on August(t+1) estimate
 
 # Test for biasedness -------------------------------------------------------------
 inc_fcst %<>%
-  mutate(ehat_feb = `Net cash income estimate` - `February forecast`,
-         ehat_aug = `Net cash income estimate` - `August forecast`,
-         ehat_nov = `Net cash income estimate` - `November forecast`,
-         ehat_feb1 = `Net cash income estimate` - `February(t+1) forecast`,
-         ehat_init = `Net cash income estimate` - `August (t + 1) "estimate"`,
-         dif = `Net cash income estimate` - lead(`Net cash income estimate`),
+  mutate(ehat_feb = income_estimate - `February forecast`,
+         ehat_aug = income_estimate - `August forecast`,
+         ehat_nov = income_estimate - `November forecast`,
+         ehat_feb1 = income_estimate - `February(t+1) forecast`,
+         ehat_init = income_estimate - `August (t + 1) "estimate"`,
+         dif = income_estimate - lead(income_estimate),
          t = `Reference Year` - 1974,
          t2 = t^2,
          t3 = t^3,
@@ -69,21 +72,21 @@ summary(fin_auge)
 #         of the forecast bias?
 
 # Plot trend to visually inspect best fit
-ggplot(inc_fcst, aes(y = `Net cash income estimate`, x = t)) +
+ggplot(inc_fcst, aes(y = income_estimate , x = t)) +
   geom_point() +
   geom_line() +
   geom_smooth(method = lm, formula = y ~ x + I(x^2))
 
 # Estimate the linear trend and get predicted trend values. 
-l_trnd <- lm(`Net cash income estimate` ~ t, data = inc_fcst)
+l_trnd <- lm(income_estimate ~ t, data = inc_fcst)
 summary(l_trnd)
 
 inc_fcst$yhat <- predict(l_trnd, inc_fcst)
 
 # Produce indicator variables for large negative and positive estimates.
 inc_fcst <- inc_fcst %>%
-  mutate(delta = (`Net cash income estimate` - yhat)/`Net cash income estimate`,
-         deviation = `Net cash income estimate` - yhat,
+  mutate(delta = (income_estimate - yhat)/income_estimate,
+         deviation = income_estimate - yhat,
          var = deviation^2,
          large = factor(delta > 0.2),
          small = factor(delta < -0.2))
@@ -105,7 +108,7 @@ summary(size_interact)
 acc <- lm(abs(ehat_aug) ~ `Reference Year`, data = inc_fcst) # This test just checks the size rather than the direction of the bias.
 summary(acc)
 
-trend <- lm(`Net farm income estimate` ~ t, data = inc_fcst)
+trend <- lm(income_estimate ~ t, data = inc_fcst)
 summary(trend)
 
 inc_fcst$var <- trend$resid^2
