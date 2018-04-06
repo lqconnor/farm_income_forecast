@@ -17,7 +17,7 @@ library(stargazer)
 #wasde <- read_csv("./Data/psd_grains_pulses.csv")
 inc_fcst <- read_csv("./Data/forecasts_cash.csv")
 
-index <- which(str_detect(colnames(inc_fcst),"Net"))        # Catches the variable attached to the final estimate cash/farm income estimate
+index <- which(str_detect(colnames(inc_fcst),"Net"))        # Catches the variable attached to the final cash/farm income estimate
 income_estimate <- inc_fcst[[index]]
 
 # Revision Variable Gen -----------------------------------------------------------
