@@ -25,7 +25,7 @@ income_estimate <- inc_fcst[[index]]
 
 fl_source <- names(inc_fcst)                                                           # Catch file source descriptor
 fl_source <- fl_source[grepl("Net", fl_source)]
-fl_source <- sub("^[[:alpha:]]+[[:blank:]]([a-z]+)[[:blank:]].+$","\\1", fl_source)    # Regular Expression to extract cash or farm portion
+fl_source <- sub("^[[:alpha:]]+[[:blank:]]([a-z]+)[[:blank:]].+$","\\1", fl_source)    # Regular Expression to extract cash or farm portion of string
 ####################################################################################################################
 
 # Variable Gen --------------------------------
