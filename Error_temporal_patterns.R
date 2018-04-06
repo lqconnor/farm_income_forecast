@@ -15,6 +15,7 @@ library(stargazer)
 
 # Data Import ---------------------------------
 #wasde <- read_csv("./Data/psd_grains_pulses.csv")
+#inc_fcst <- read_csv("./Data/forecasts.csv")
 inc_fcst <- read_csv("./Data/forecasts_cash.csv")
 
 index <- which(str_detect(colnames(inc_fcst),"Net"))        # Catches the variable attached to the final cash/farm income estimate
@@ -107,6 +108,11 @@ summary(size_interact)
 # Time Dependence --------------------------------------------------------------------
 acc <- lm(abs(ehat_aug) ~ `Reference Year`, data = inc_fcst) # This test just checks the size rather than the direction of the bias.
 summary(acc)
+
+#############################################################################################################
+#Remember to comment out when running the farm income file. Include when running cash income file
+inc_fcst$`August (t + 1) "estimate"`[is.na(inc_fcst$`August (t + 1) "estimate"`)] <- income_estimate[is.na(inc_fcst$`August (t + 1) "estimate"`)]
+#############################################################################################################
 
 trend <- lm(income_estimate ~ t, data = inc_fcst)
 summary(trend)

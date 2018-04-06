@@ -14,16 +14,21 @@ library(ggplot2)
 library(stargazer)
 
 # Data Import -------------------------------------------------------------------------
+
+#inc_fcst <- read_csv("./Data/forecasts.csv")
 inc_fcst <- read_csv("./Data/forecasts_cash.csv")
+
+index <- which(str_detect(colnames(inc_fcst),"Net"))        # Catches the variable attached to the final cash/farm income estimate
+income_estimate <- inc_fcst[[index]]
 
 # Test for biasedness -----------------------------------------------------------------
 inc_fcst %<>%
-  mutate(ehat_feb = `Net cash income estimate` - `February forecast`) %>%
-  mutate(ehat_aug = `Net cash income estimate` - `August forecast`) %>%
-  mutate(ehat_nov = `Net cash income estimate` - `November forecast`) %>%
-  mutate(ehat_feb1 = `Net cash income estimate` - `February(t+1) forecast`) %>%
-  mutate(ehat_init = `Net cash income estimate` - `August (t + 1) "estimate"`) %>%
-  mutate(dif = `Net cash income estimate` - lead(`Net cash income estimate`)) %>%
+  mutate(ehat_feb = income_estimate - `February forecast`) %>%
+  mutate(ehat_aug = income_estimate - `August forecast`) %>%
+  mutate(ehat_nov = income_estimate - `November forecast`) %>%
+  mutate(ehat_feb1 = income_estimate - `February(t+1) forecast`) %>%
+  mutate(ehat_init = income_estimate - `August (t + 1) "estimate"`) %>%
+  mutate(dif = income_estimate - lead(income_estimate)) %>%
   mutate(t = `Reference Year` - 1974) %>%
   mutate(t2 = t^2)
 
@@ -46,23 +51,3 @@ stargazer(fit, title = "Biasedness Test",
           dep.var.labels = c("February Forecast", "August Forecast", 
                              "November Forecast", "February (t+1) Forecast", 
                              "August (t+1) Estimate"))
-
-# Forecast Accuracy ---------------------------------------------------------------------
-# Tests to be carried out:
-# 1. Has the forecast accuracy improved over time?
-# 2. Is there a difference in the error pattern between earlier (February (t)) vs later
-#    (February (t+1) forecasts?). Are some more consistent, less biased etc.
-# 3. Changes in the magnitude and variance of forecasts over time.
-
-acc <- lm(abs(ehat_aug) ~ `Reference Year`, data = inc_fcst)
-summary(acc)
-
-inc_fcst$`August (t + 1) "estimate"`[is.na(inc_fcst$`August (t + 1) "estimate"`)] <- inc_fcst$`Net cash income estimate`[is.na(inc_fcst$`August (t + 1) "estimate"`)]
-
-trend <- lm(`August (t + 1) "estimate"` ~ t, data = inc_fcst)
-summary(trend)
-
-inc_fcst$var <- trend$resid^2
-
-var <- lm(var ~ `Reference Year`, data = inc_fcst)
-summary(var)

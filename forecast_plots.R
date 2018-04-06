@@ -16,15 +16,18 @@ library(stargazer)
 # Data Import ---------------------------------
 #wasde <- read_csv("./Data/psd_grains_pulses.csv")
 inc_fcst <- read_csv("./Data/forecasts.csv")
-csh_fcst <- read_csv("./Data/forecasts_cash.csv")
+#inc_fcst <- read_csv("./Data/forecasts_cash.csv")
+
+index <- which(str_detect(colnames(inc_fcst),"Net"))        # Catches the variable attached to the final cash/farm income estimate
+income_estimate <- inc_fcst[[index]]
 
 # Variable Gen --------------------------------
-inc_fcst <- mutate(csh_fcst, aug_rev = (`August forecast` - `February forecast`)/`February forecast`,                    # Change in August update on February forecast
+inc_fcst <- mutate(inc_fcst, aug_rev = (`August forecast` - `February forecast`)/`February forecast`,                    # Change in August update on February forecast
                    nov_rev = (`November forecast` - `August forecast`)/`August forecast`,                                # Change in November update on August forecast
                    feb_rev = (`February(t+1) forecast` - `November forecast`)/`November forecast`,                       # Change in February(t+1) update on November forecast 
                    aug_est = (`August (t + 1) "estimate"` - `February(t+1) forecast`)/`February(t+1) forecast`,          # Change in August first estimate on February(t+1) forecast
                    #final_est = (`Net farm income estimate` - `February(t+1) forecast`)/`February(t+1) forecast`,        # Change in final estimate on February(t+1) forecast
-                   final_est = (`Net cash income estimate` - `August (t + 1) "estimate"`)/`August (t + 1) "estimate"`)   # Change in final estimate on August(t+1) estimate
+                   final_est = (income_estimate - `August (t + 1) "estimate"`)/`August (t + 1) "estimate"`)              # Change in final estimate on August(t+1) estimate
 
 # ----------------------------------------------------------------------------------
 # Plot correlations of changes in consecutive updates. 
@@ -61,34 +64,3 @@ ggplot(data = inc_fcst, aes(x=aug_est, y=final_est)) +
   labs(x = "Change at August Estimate", y = "Change at Final Estimate")
 ggsave("plot5.jpg")
 
-
-# Test for biasedness -------------------------------------------------------------
-inc_fcst %<>%
-  mutate(ehat_feb = `Net cash income estimate` - `February forecast`) %>%
-  mutate(ehat_aug = `Net cash income estimate` - `August forecast`) %>%
-  mutate(ehat_nov = `Net cash income estimate` - `November forecast`) %>%
-  mutate(ehat_feb1 = `Net cash income estimate` - `February(t+1) forecast`) %>%
-  mutate(ehat_init = `Net cash income estimate` - `August (t + 1) "estimate"`)
-
-# Holden-Peel Test
-
-fit1 <- lm(ehat_feb ~ 1, data = inc_fcst)
-summary(fit1)
-
-fit2 <- lm(ehat_aug ~ 1, data = inc_fcst)
-summary(fit2)
-
-fit3 <- lm(ehat_nov ~ 1, data = inc_fcst)
-summary(fit3)
-
-fit4 <- lm(ehat_feb1 ~ 1, data = inc_fcst)
-summary(fit4)
-
-fit5 <- lm(ehat_init ~ 1, data = inc_fcst)
-summary(fit5)
-
-# Output Tables --------------------------------------------------------------------
-stargazer(fit1, fit2, fit3, fit4, fit5, title = "Biasedness Test",
-          dep.var.labels = c("February Forecast", "August Forecast", 
-                             "November Forecast", "February (t+1) Forecast", 
-                             "August (t+1) Estimate"))
