@@ -23,14 +23,14 @@ income_estimate <- inc_fcst[[index]]
 
 # Test for biasedness -----------------------------------------------------------------
 inc_fcst %<>%
-  mutate(ehat_feb = income_estimate - `February forecast`) %>%
-  mutate(ehat_aug = income_estimate - `August forecast`) %>%
-  mutate(ehat_nov = income_estimate - `November forecast`) %>%
-  mutate(ehat_feb1 = income_estimate - `February(t+1) forecast`) %>%
-  mutate(ehat_init = income_estimate - `August (t + 1) "estimate"`) %>%
-  mutate(dif = income_estimate - lead(income_estimate)) %>%
-  mutate(t = `Reference Year` - 1974) %>%
-  mutate(t2 = t^2)
+  mutate(ehat_feb = income_estimate - `February forecast`,
+         ehat_aug = income_estimate - `August forecast`,
+         ehat_nov = income_estimate - `November forecast`,
+         ehat_feb1 = income_estimate - `February(t+1) forecast`,
+         ehat_init = income_estimate - `August (t + 1) "estimate"`,
+         dif = income_estimate - lead(income_estimate),
+         t = `Reference Year` - 1974,
+         t2 = t^2)
 
 # Holden-Peel Test ---------------------------------------------------------------------
 fit <- list()                                                 # Create vector for lm() output
