@@ -19,8 +19,8 @@ frm_fcst <- read_csv("./Data/forecasts_farm.csv")
 csh_fcst <- read_csv("./Data/forecasts_cash.csv")
 
 ###########################################################################################
-# Code Generalization. j==1 means uses farm income file. Otherwise it uses cash income file
-j = 1
+# Code Generalization.
+j = 1                                  # j==1 means program uses farm income file. Otherwise it uses cash income file
 if(j== 1){
   inc_fcst <- frm_fcst
 } else{

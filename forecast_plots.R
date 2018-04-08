@@ -20,7 +20,6 @@ inc_fcst <- read_csv("./Data/forecasts_cash.csv")
 
 ####################################################################################################################
 # Code Generalization. Catch file unique identifiers -------------------------------------------------------------
-
 j = 1                                    # j==1 means uses farm income file. Otherwise it uses cash income file
 if(j== 1){
   inc_fcst <- frm_fcst
