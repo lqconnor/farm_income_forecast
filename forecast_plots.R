@@ -1,7 +1,7 @@
 # Farm Income Forecast Project.
 # The existence of smoothing in farm income forecasts
 
-#Pre - Amble ------------------------------
+# Pre - Amble ------------------------------
 rm(list = ls())
 cat("\f")
 getwd()
@@ -15,11 +15,18 @@ library(stargazer)
 
 # Data Import ---------------------------------
 #wasde <- read_csv("./Data/psd_grains_pulses.csv")
-#inc_fcst <- read_csv("./Data/forecasts.csv")
+#inc_fcst <- read_csv("./Data/forecast_farm.csv")
 inc_fcst <- read_csv("./Data/forecasts_cash.csv")
 
 ####################################################################################################################
 # Code Generalization. Catch file unique identifiers -------------------------------------------------------------
+
+j = 1                                    # j==1 means uses farm income file. Otherwise it uses cash income file
+if(j== 1){
+  inc_fcst <- frm_fcst
+} else{
+  inc_fcst <- csh_fcst
+}
 
 # Catches the variable attached to the final cash/farm income estimate
 index <- which(str_detect(colnames(inc_fcst),"Net"))                                   

@@ -15,11 +15,21 @@ library(stargazer)
 
 # Data Import ---------------------------------
 #wasde <- read_csv("./Data/psd_grains_pulses.csv")
-#inc_fcst <- read_csv("./Data/forecasts.csv")
-inc_fcst <- read_csv("./Data/forecasts_cash.csv")
+frm_fcst <- read_csv("./Data/forecasts_farm.csv")
+csh_fcst <- read_csv("./Data/forecasts_cash.csv")
+
+###########################################################################################
+# Code Generalization. j==1 means uses farm income file. Otherwise it uses cash income file
+j = 1
+if(j== 1){
+  inc_fcst <- frm_fcst
+} else{
+  inc_fcst <- csh_fcst
+}
 
 index <- which(str_detect(colnames(inc_fcst),"Net"))                                   # Catches the variable attached to the final cash/farm income estimate
 income_estimate <- inc_fcst[[index]]
+############################################################################################
 
 # Revision Variable Gen -----------------------------------------------------------
 inc_fcst <- mutate(inc_fcst, 
