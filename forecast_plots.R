@@ -15,16 +15,16 @@ library(stargazer)
 
 # Data Import ---------------------------------
 #wasde <- read_csv("./Data/psd_grains_pulses.csv")
-#inc_fcst <- read_csv("./Data/forecast_farm.csv")
-inc_fcst <- read_csv("./Data/forecasts_cash.csv")
+csh_fcst <- read_csv("./Data/forecasts_cash.csv")
+frm_fcst <- read_csv("./Data/forecasts_farm.csv")
 
 ####################################################################################################################
 # Code Generalization. Catch file unique identifiers -------------------------------------------------------------
-j = 1                                    # j==1 means uses farm income file. Otherwise it uses cash income file
+j = 1                                    # j==1 means uses cash income file. Otherwise it uses farm income file
 if(j== 1){
-  inc_fcst <- frm_fcst
-} else{
   inc_fcst <- csh_fcst
+} else{
+  inc_fcst <- frm_fcst
 }
 
 # Catches the variable attached to the final cash/farm income estimate
