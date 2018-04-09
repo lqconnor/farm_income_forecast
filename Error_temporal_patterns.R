@@ -20,7 +20,7 @@ frm_fcst <- read_csv("./Data/forecasts_farm.csv")
 
 ###########################################################################################
 # Code Generalization.
-j = 1                                   # j==1 means uses cash income file. Otherwise it uses farm income file
+j = 11                                   # j==1 means uses cash income file. Otherwise it uses farm income file
 if(j== 1){
   inc_fcst <- csh_fcst
 } else{
@@ -121,7 +121,7 @@ summary(acc)
 
 #############################################################################################################
 #Remember to comment out when running the farm income file. Include when running cash income file
-inc_fcst$`August (t + 1) "estimate"`[is.na(inc_fcst$`August (t + 1) "estimate"`)] <- income_estimate[is.na(inc_fcst$`August (t + 1) "estimate"`)]
+#inc_fcst$`August (t + 1) "estimate"`[is.na(inc_fcst$`August (t + 1) "estimate"`)] <- income_estimate[is.na(inc_fcst$`August (t + 1) "estimate"`)]
 #############################################################################################################
 
 trend <- lm(income_estimate ~ t, data = inc_fcst)

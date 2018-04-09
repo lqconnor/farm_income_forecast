@@ -1,0 +1,70 @@
+---
+title: "Analysis of USDA Income forecast Errors"
+author: Lawson Connor
+Date: 4/9/2018
+output: pdf_document
+header-includes:
+- \usepackage[margin=1in]{geometry}
+- \usepackage{graphicx}
+- \usepackage{epstopdf}
+- \usepackage{booktabs}
+- \usepackage{amsmath}
+- \usepackage{tabularx}
+- \usepackage{caption}
+- \usepackage{makecell}
+- \usepackage{array}
+---
+
+```{r, include=FALSE}
+library(knitr)
+library(tidyverse)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load_scripts, include = FALSE}
+source('./forecast_plots.R')
+source('./error_temporal_patterns.R')
+```
+
+## Farm Income Forecast: Analysis of the Farm Income Forecast Errors
+
+
+  The USDA releases 4 national farm income forecasts each crop cycle. The USDA releases their first farm income forecast in early February, followed by subsequent forecast in August, November. The final forecast is released in February following the forecast year before releasing the first estimate of farm income in the following August. USDA reports, such as the WASDE reports containing production and price forecast have been found to be a significant tool for planning by farmers and other stakeholders in agriculture. The USDA farm income forecast is no different, and is often used as a gauge of farm health by bankers, policy makers, researchers and farmers alike. The more accurate these forecasts are, the better they can inform stakeholders and allow accurate preparation and adjustment for the upcoming season. The accuracy of these forecasts and any room for improvement is an important issue.
+  
+  Systematic errors in forecasts often indicate that forecasts can be improved upon, particularly by incorporating more information available at the time that the forecasts were produced. Several errors in forecasts can indicate room for improvement. Systematic biases in forecasts can indicate forecasts issues, as well as sequential dependence of forecast errors. We will perform several of these tests determine the extent of systematic errors in USDA farm income forecasts.
+
+
+```{r, fig,width = 2.5, fig.height = 7.5, echo=FALSE, warning = FALSE}
+ggplot(data = inc_fcst, aes(x=aug_rev, y=nov_rev)) +
+  geom_point() +
+  geom_smooth(method = lm, se = TRUE) +
+  labs(x = "Change at August Forecast", y = "Change at November Forecast")
+```
+
+\begin{table}[!htbp] \centering 
+  \caption{Biasedness Test} 
+  \label{} 
+\resizebox{\columnwidth}{!}{
+\begin{tabular}{@{\extracolsep{5pt}}lccccc} 
+\\[-1.8ex]\hline 
+\hline \\[-1.8ex] 
+ & \multicolumn{5}{c}{\textit{Dependent variable:}} \\ 
+\cline{2-6} 
+\\[-1.8ex] & \thead{\normalsize February \\  \normalsize Forecast} & \thead{\normalsize August \\ \normalsize Forecast} & 
+\thead{\normalsize November\\  \normalsize Forecast} & \thead{\normalsize February (t+1) \\ \normalsize  Forecast} & \thead{\normalsize August (t+1) \\ \normalsize  Estimate} \\ 
+\hline \\[-1.8ex] 
+ Holden-Peel Coefficient & 3.973$^{***}$ & 0.613 & 1.044 & $-$0.094 & $-$1.137 \\ 
+  & (1.446) & (1.725) & (1.334) & (1.300) & (0.922) \\ 
+  & & & & & \\ 
+\hline \\[-1.8ex] 
+Observations & 42 & 42 & 42 & 42 & 42 \\ 
+Residual Std. Error (df = 41) & 9.370 & 11.179 & 8.648 & 8.426 & 5.976 \\ 
+\hline 
+\hline \\[-1.8ex] 
+\textit{Note:}  & \multicolumn{5}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\ 
+\end{tabular} 
+}
+\end{table} 
