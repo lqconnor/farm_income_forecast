@@ -15,56 +15,120 @@ header-includes:
 - \usepackage{array}
 ---
 
-```{r, include=FALSE}
-library(knitr)
-library(tidyverse)
-```
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(tidyverse)
+library(stargazer)
+library(strucchange)
 ```
 
 ```{r load_scripts, include = FALSE}
 source('./forecast_plots.R')
-source('./error_temporal_patterns.R')
+source('./error_temporal_patterns_log.R')
 ```
 
-## Farm Income Forecast: Analysis of the Farm Income Forecast Errors
+```{r, echo= FALSE}
+index <- which(str_detect(colnames(inc_fcst),"Net"))                                   # Catches the variable attached to the final cash/farm income estimate
+income_estimate <- log(inc_fcst[[index]])
 
+############################################################################################
 
-  The USDA releases 4 national farm income forecasts each crop cycle. The USDA releases their first farm income forecast in early February, followed by subsequent forecast in August, November. The final forecast is released in February following the forecast year before releasing the first estimate of farm income in the following August. USDA reports, such as the WASDE reports containing production and price forecast have been found to be a significant tool for planning by farmers and other stakeholders in agriculture. The USDA farm income forecast is no different, and is often used as a gauge of farm health by bankers, policy makers, researchers and farmers alike. The more accurate these forecasts are, the better they can inform stakeholders and allow accurate preparation and adjustment for the upcoming season. The accuracy of these forecasts and any room for improvement is an important issue.
+# Revision Variable Gen -----------------------------------------------------------
+inc_fcst <- mutate(inc_fcst, 
+                   aug_rev = (`August forecast` - `February forecast`)/`February forecast`,                              # Change in August update on February forecast
+                   nov_rev = (`November forecast` - `August forecast`)/`August forecast`,                                # Change in November update on August forecast
+                   feb_rev = (`February(t+1) forecast` - `November forecast`)/`November forecast`,                       # Change in February(t+1) update on November forecast 
+                   aug_est = (`August (t + 1) "estimate"` - `February(t+1) forecast`)/`February(t+1) forecast`,          # Change in August first estimate on February(t+1) forecast
+                   final_est = (income_estimate - `August (t + 1) "estimate"`)/`August (t + 1) "estimate"`)              # Change in final estimate on August(t+1) estimate
+
+# Generate Forecast Error -------------------------------------------------------------
+inc_fcst %<>%
+  mutate(ehat_feb = income_estimate - log(`February forecast`),
+         ehat_aug = income_estimate - log(`August forecast`),
+         ehat_nov = income_estimate - log(`November forecast`),
+         ehat_feb1 = income_estimate - log(`February(t+1) forecast`),
+         ehat_init = income_estimate - log(`August (t + 1) "estimate"`),
+         dif = income_estimate - lead(income_estimate),
+         t = `Reference Year` - 1974,
+         t2 = t^2,
+         t3 = t^3,
+         t4 = t^4)
   
-  Systematic errors in forecasts often indicate that forecasts can be improved upon, particularly by incorporating more information available at the time that the forecasts were produced. Several errors in forecasts can indicate room for improvement. Systematic biases in forecasts can indicate forecasts issues, as well as sequential dependence of forecast errors. We will perform several of these tests determine the extent of systematic errors in USDA farm income forecasts.
 
+# Forecast Accuracy ----------------------------------------------------------------
 
-```{r, fig,width = 2.5, fig.height = 7.5, echo=FALSE, warning = FALSE}
-ggplot(data = inc_fcst, aes(x=aug_rev, y=nov_rev)) +
+#############################################################################################################
+#Remember to comment out when running the farm income file. Include when running cash income file
+inc_fcst$`August (t + 1) "estimate"`[is.na(inc_fcst$`August (t + 1) "estimate"`)] <- income_estimate[is.na(inc_fcst$`August (t + 1) "estimate"`)]
+
+#############################################################################################################
+# Plot trend to visually inspect best fit
+ggplot(inc_fcst, aes(y = income_estimate , x = `Reference Year`)) +
   geom_point() +
-  geom_smooth(method = lm, se = TRUE) +
-  labs(x = "Change at August Forecast", y = "Change at November Forecast")
+  geom_line() +
+  geom_smooth(method = lm, formula = y ~ x)
+
+# Estimate the linear trend and get predicted trend values. 
+l_trnd <- lm(income_estimate ~ t, data = inc_fcst)
+summary(l_trnd)
+
+inc_fcst$yhat <- predict(l_trnd, inc_fcst)
+inc_fcst$var <- l_trnd$resid^2
+
+# Produce indicator variables for large negative and positive estimates.
+inc_fcst <- inc_fcst %>%
+  mutate(delta = income_estimate - yhat,
+         deviation = income_estimate - yhat,
+         var = deviation^2,
+         large = factor(delta > 0.1),
+         small = factor(delta < -0.1))
+#############################################################################################################
+# Behavior of Variance of Income over time
+vrc <- lm(var ~ `Reference Year`, data = inc_fcst)
+summary(vrc)
+
+#############################################################################################################
+# Structural Breaks in Farm Income estimates
+inc_fcst <- inc_fcst %>%
+  arrange(`Reference Year`)
+
+index <- which(str_detect(colnames(inc_fcst),"Net"))                                   # Catches the variable attached to the final cash/farm income estimate
+income_estimate <- inc_fcst[[index]]
+
+incomes <- ts(income_estimate, start = c(1975, 1), end = c(2016, 1), frequency = 1)
+
+bp <- breakpoints(incomes ~ 1, data = inc_fcst)
+summary(bp)
+
+#plot(bp)
+plot(incomes)
+lines(bp)
+
+ci_incomes <- confint(bp)
+lines(ci_incomes)
+
+# Time Dependence of Forecast Error Bias
+fit <- list()                                                 # Create vector for lm() output
+tile <- which(str_detect(colnames(inc_fcst),"ehat"))          # Extract column indexes with forecast error variables in the inc_fcst tibble
+
+for (i in seq_along(tile)){
+  
+  eht_idx <- tile[i]                                            # Get column index of forecast variables from tile 
+  fit[[i]] <- lm(inc_fcst[[eht_idx]]~ t, data = inc_fcst)        # Perform intercept regression on each forecast error column. Put output into fit
+  
+}
+
+fit %>%                                                       
+  map(summary)                                                # Iterate through the columns of fit to summarize the output from lm()
+
 ```
 
-\begin{table}[!htbp] \centering 
-  \caption{Biasedness Test} 
-  \label{} 
-\resizebox{\columnwidth}{!}{
-\begin{tabular}{@{\extracolsep{5pt}}lccccc} 
-\\[-1.8ex]\hline 
-\hline \\[-1.8ex] 
- & \multicolumn{5}{c}{\textit{Dependent variable:}} \\ 
-\cline{2-6} 
-\\[-1.8ex] & \thead{\normalsize February \\  \normalsize Forecast} & \thead{\normalsize August \\ \normalsize Forecast} & 
-\thead{\normalsize November\\  \normalsize Forecast} & \thead{\normalsize February (t+1) \\ \normalsize  Forecast} & \thead{\normalsize August (t+1) \\ \normalsize  Estimate} \\ 
-\hline \\[-1.8ex] 
- Holden-Peel Coefficient & 3.973$^{***}$ & 0.613 & 1.044 & $-$0.094 & $-$1.137 \\ 
-  & (1.446) & (1.725) & (1.334) & (1.300) & (0.922) \\ 
-  & & & & & \\ 
-\hline \\[-1.8ex] 
-Observations & 42 & 42 & 42 & 42 & 42 \\ 
-Residual Std. Error (df = 41) & 9.370 & 11.179 & 8.648 & 8.426 & 5.976 \\ 
-\hline 
-\hline \\[-1.8ex] 
-\textit{Note:}  & \multicolumn{5}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\ 
-\end{tabular} 
-}
-\end{table} 
+
+
+```{r mylatextable, results = "asis"}
+stargazer(stargazer(fit, title = "Time Dependence of Forecast Error Bias",
+          dep.var.labels = c("February Forecast", "August Forecast", 
+                             "November Forecast", "February (t+1) Forecast", 
+                             "August (t+1) Estimate"), type = 'latex'))
+```

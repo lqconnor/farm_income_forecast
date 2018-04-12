@@ -26,8 +26,8 @@ if(j== 1){
   inc_fcst <- frm_fcst
 }
 
-index <- which(str_detect(colnames(inc_fcst),"Net"))        # Catches the variable attached to the final cash/farm income estimate
-income_estimate <- inc_fcst[[index]]
+inc_idx <- which(str_detect(colnames(inc_fcst),"Net"))        # Catches the variable attached to the final cash/farm income estimate
+income_estimate <- inc_fcst[[inc_idx]]
 ############################################################################################
 
 # Test for biasedness -----------------------------------------------------------------
@@ -47,8 +47,8 @@ tile <- which(str_detect(colnames(inc_fcst),"ehat"))          # Extract column i
 
 for (i in seq_along(tile)){
   
-  index <- tile[i]                                            # Get column index of forecast variables from tile 
-  fit[[i]] <- lm(inc_fcst[[index]]~1, data = inc_fcst)        # Perform intercept regression on each forecast error column. Put output into fit
+  eht_idx <- tile[i]                                            # Get column index of forecast variables from tile 
+  fit[[i]] <- lm(inc_fcst[[eht_idx]]~1, data = inc_fcst)        # Perform intercept regression on each forecast error column. Put output into fit
   
 }
 

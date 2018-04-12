@@ -20,7 +20,7 @@ frm_fcst <- read_csv("./Data/forecasts_farm.csv")
 
 ###########################################################################################
 # Code Generalization.
-j = 11                                   # j==1 means uses cash income file. Otherwise it uses farm income file
+j = 1                                   # j==1 means uses cash income file. Otherwise it uses farm income file
 if(j== 1){
   inc_fcst <- csh_fcst
 } else{
@@ -54,6 +54,16 @@ inc_fcst %<>%
   
 
 # Forecast Accuracy ----------------------------------------------------------------
+#############################################################################################################
+#Remember to comment out when running the farm income file. Include when running cash income file
+inc_fcst$`August (t + 1) "estimate"`[is.na(inc_fcst$`August (t + 1) "estimate"`)] <- income_estimate[is.na(inc_fcst$`August (t + 1) "estimate"`)]
+#############################################################################################################
+
+trend <- lm(income_estimate ~ t, data = inc_fcst)
+summary(trend)
+
+inc_fcst$var <- trend$resid^2
+
 # Tests to be carried out:
 # 1. Has the forecast accuracy improved over time?
 # 2. Is there a difference in the error pattern between earlier (February (t)) vs later
@@ -83,10 +93,10 @@ summary(fin_auge)
 #         of the forecast bias?
 
 # Plot trend to visually inspect best fit
-ggplot(inc_fcst, aes(y = income_estimate , x = t)) +
+ggplot(inc_fcst, aes(y = income_estimate , x = `Reference Year`)) +
   geom_point() +
   geom_line() +
-  geom_smooth(method = lm, formula = y ~ x + I(x^2))
+  geom_smooth(method = lm, formula = y ~ x)
 
 # Estimate the linear trend and get predicted trend values. 
 l_trnd <- lm(income_estimate ~ t, data = inc_fcst)
@@ -102,7 +112,7 @@ inc_fcst <- inc_fcst %>%
          large = factor(delta > 0.2),
          small = factor(delta < -0.2))
 
-size_interact <- lm(ehat_feb1 ~ large, data = inc_fcst)
+size_interact <- lm(ehat_feb ~ small + large, data = inc_fcst)
 summary(size_interact)
 
 size_interact <- lm(abs(ehat_feb1) ~ var, data = inc_fcst) # The Febrary (t+1) and the February (t) forecasts have become more spread as farm income has become more spread. Others not affected. Visual inspection agrees.
@@ -115,19 +125,31 @@ summary(size_interact)
 #         forecasts tend to get larger?
 
 
-# Time Dependence --------------------------------------------------------------------
-acc <- lm(abs(ehat_aug) ~ `Reference Year`, data = inc_fcst) # This test just checks the size rather than the direction of the bias.
+# Test 4. Time Dependence of forecast bias --------------------------------------------------------------------
+acc <- lm(ehat_init ~ `Reference Year`, data = inc_fcst) # This test just checks the size rather than the direction of the bias.
 summary(acc)
 
-#############################################################################################################
-#Remember to comment out when running the farm income file. Include when running cash income file
-#inc_fcst$`August (t + 1) "estimate"`[is.na(inc_fcst$`August (t + 1) "estimate"`)] <- income_estimate[is.na(inc_fcst$`August (t + 1) "estimate"`)]
-#############################################################################################################
 
-trend <- lm(income_estimate ~ t, data = inc_fcst)
-summary(trend)
+vrc <- lm(var ~ `Reference Year`, data = inc_fcst)
+summary(vrc)
 
-inc_fcst$var <- trend$resid^2
+acc <- lm(ehat_feb ~ `Reference Year` + var, data = inc_fcst) # This test just checks the size rather than the direction of the bias.
+summary(acc)
 
-var <- lm(var ~ `Reference Year`, data = inc_fcst)
-summary(var)
+inc_fcst <- inc_fcst %>%
+  arrange(`Reference Year`)
+
+index <- which(str_detect(colnames(inc_fcst),"Net"))                                   # Catches the variable attached to the final cash/farm income estimate
+income_estimate <- inc_fcst[[index]]
+
+incomes <- ts(income_estimate, start = c(1975, 1), end = c(2016, 1), frequency = 1)
+
+bp <- breakpoints(incomes ~ 1, data = inc_fcst)
+summary(bp)
+
+#plot(bp)
+plot(incomes)
+lines(bp)
+
+ci_incomes <- confint(bp)
+lines(ci_incomes)

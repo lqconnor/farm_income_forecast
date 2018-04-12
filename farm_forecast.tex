@@ -1,0 +1,380 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={Analysis of USDA Income forecast Errors},
+            pdfauthor={Lawson Connor},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+  \title{Analysis of USDA Income forecast Errors}
+  \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+  \author{Lawson Connor}
+  \preauthor{\centering\large\emph}
+  \postauthor{\par}
+  \date{}
+  \predate{}\postdate{}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{tabularx}
+\usepackage{caption}
+\usepackage{makecell}
+\usepackage{array}
+
+\begin{document}
+\maketitle
+
+\includegraphics{farm_forecast_files/figure-latex/unnamed-chunk-1-1.pdf}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = income_estimate ~ t, data = inc_fcst)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.35547 -0.09196 -0.01144  0.09778  0.28534 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(>|t|)    
+## (Intercept) 3.334768   0.043672   76.36   <2e-16 ***
+## t           0.033879   0.001769   19.15   <2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.139 on 40 degrees of freedom
+## Multiple R-squared:  0.9016, Adjusted R-squared:  0.8992 
+## F-statistic: 366.6 on 1 and 40 DF,  p-value: < 2.2e-16
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = var ~ `Reference Year`, data = inc_fcst)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.032806 -0.015089 -0.001860  0.008173  0.102019 
+## 
+## Coefficients:
+##                    Estimate Std. Error t value Pr(>|t|)   
+## (Intercept)      -1.8057568  0.5959202  -3.030  0.00427 **
+## `Reference Year`  0.0009141  0.0002986   3.061  0.00393 **
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.02346 on 40 degrees of freedom
+## Multiple R-squared:  0.1898, Adjusted R-squared:  0.1695 
+## F-statistic: 9.371 on 1 and 40 DF,  p-value: 0.003929
+\end{verbatim}
+
+\begin{verbatim}
+## 
+##   Optimal (m+1)-segment partition: 
+## 
+## Call:
+## breakpoints.formula(formula = incomes ~ 1, data = inc_fcst)
+## 
+## Breakpoints at observation number:
+##                       
+## m = 1            29   
+## m = 2   12          35
+## m = 3   10       28 36
+## m = 4   10 17    28 36
+## m = 5   10 16 22 28 36
+## 
+## Corresponding to breakdates:
+##                                 
+## m = 1                  2003     
+## m = 2   1986                2009
+## m = 3   1984           2002 2010
+## m = 4   1984 1991      2002 2010
+## m = 5   1984 1990 1996 2002 2010
+## 
+## Fit:
+##                                                    
+## m   0       1       2       3       4       5      
+## RSS 35514.7 11302.0  5273.9  2546.2  2360.7  2389.6
+## BIC   409.7   369.1   344.6   321.5   325.8   333.8
+\end{verbatim}
+
+\includegraphics{farm_forecast_files/figure-latex/unnamed-chunk-1-2.pdf}
+
+\begin{verbatim}
+## [[1]]
+## 
+## Call:
+## lm(formula = inc_fcst[[eht_idx]] ~ t, data = inc_fcst)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.25575 -0.09016 -0.02013  0.08502  0.28046 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(>|t|)  
+## (Intercept) 0.097501   0.044890   2.172   0.0362 *
+## t           0.000857   0.001776   0.482   0.6322  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.1315 on 38 degrees of freedom
+##   (2 observations deleted due to missingness)
+## Multiple R-squared:  0.006089,   Adjusted R-squared:  -0.02007 
+## F-statistic: 0.2328 on 1 and 38 DF,  p-value: 0.6322
+## 
+## 
+## [[2]]
+## 
+## Call:
+## lm(formula = inc_fcst[[eht_idx]] ~ t, data = inc_fcst)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.23106 -0.08625 -0.01939  0.07029  0.34612 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(>|t|)  
+## (Intercept)  0.0808839  0.0428131   1.889   0.0665 .
+## t           -0.0007776  0.0016937  -0.459   0.6488  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.125 on 38 degrees of freedom
+##   (2 observations deleted due to missingness)
+## Multiple R-squared:  0.005516,   Adjusted R-squared:  -0.02065 
+## F-statistic: 0.2108 on 1 and 38 DF,  p-value: 0.6488
+## 
+## 
+## [[3]]
+## 
+## Call:
+## lm(formula = inc_fcst[[eht_idx]] ~ t, data = inc_fcst)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.19964 -0.06862 -0.00657  0.06417  0.33652 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(>|t|)
+## (Intercept)  5.011e-02  3.826e-02   1.310    0.198
+## t           -8.375e-05  1.514e-03  -0.055    0.956
+## 
+## Residual standard error: 0.1117 on 38 degrees of freedom
+##   (2 observations deleted due to missingness)
+## Multiple R-squared:  8.055e-05,  Adjusted R-squared:  -0.02623 
+## F-statistic: 0.003061 on 1 and 38 DF,  p-value: 0.9562
+## 
+## 
+## [[4]]
+## 
+## Call:
+## lm(formula = inc_fcst[[eht_idx]] ~ t, data = inc_fcst)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.213870 -0.062551  0.003336  0.075130  0.302922 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(>|t|)  
+## (Intercept)  0.072921   0.034704   2.101   0.0421 *
+## t           -0.001037   0.001390  -0.746   0.4601  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.1067 on 39 degrees of freedom
+##   (1 observation deleted due to missingness)
+## Multiple R-squared:  0.01407,    Adjusted R-squared:  -0.01121 
+## F-statistic: 0.5567 on 1 and 39 DF,  p-value: 0.4601
+## 
+## 
+## [[5]]
+## 
+## Call:
+## lm(formula = inc_fcst[[eht_idx]] ~ t, data = inc_fcst)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.36266 -0.16579 -0.03176  0.08276  2.01910 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(>|t|)  
+## (Intercept)  0.254180   0.112584   2.258   0.0295 *
+## t           -0.008764   0.004562  -1.921   0.0619 .
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 0.3583 on 40 degrees of freedom
+## Multiple R-squared:  0.08448,    Adjusted R-squared:  0.06159 
+## F-statistic: 3.691 on 1 and 40 DF,  p-value: 0.06185
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{stargazer}\NormalTok{(}\KeywordTok{stargazer}\NormalTok{(fit, }\DataTypeTok{title =} \StringTok{"Time Dependence of Forecast Error Bias"}\NormalTok{,}
+          \DataTypeTok{dep.var.labels =} \KeywordTok{c}\NormalTok{(}\StringTok{"February Forecast"}\NormalTok{, }\StringTok{"August Forecast"}\NormalTok{, }
+                             \StringTok{"November Forecast"}\NormalTok{, }\StringTok{"February (t+1) Forecast"}\NormalTok{, }
+                             \StringTok{"August (t+1) Estimate"}\NormalTok{), }\DataTypeTok{type =} \StringTok{'latex'}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\% Table created by stargazer v.5.2 by Marek Hlavac, Harvard University.
+E-mail: hlavac at fas.harvard.edu \% Date and time: Wed, Apr 11, 2018 -
+12:21:30 PM
+
+\begin{table}[!htbp] \centering 
+  \caption{Time Dependence of Forecast Error Bias} 
+  \label{} 
+\begin{tabular}{@{\extracolsep{5pt}}lccccc} 
+\\[-1.8ex]\hline 
+\hline \\[-1.8ex] 
+ & \multicolumn{5}{c}{\textit{Dependent variable:}} \\ 
+\cline{2-6} 
+\\[-1.8ex] & \multicolumn{5}{c}{February Forecast} \\ 
+\\[-1.8ex] & (1) & (2) & (3) & (4) & (5)\\ 
+\hline \\[-1.8ex] 
+ t & 0.001 & $-$0.001 & $-$0.0001 & $-$0.001 & $-$0.009$^{*}$ \\ 
+  & (0.002) & (0.002) & (0.002) & (0.001) & (0.005) \\ 
+  & & & & & \\ 
+ Constant & 0.098$^{**}$ & 0.081$^{*}$ & 0.050 & 0.073$^{**}$ & 0.254$^{**}$ \\ 
+  & (0.045) & (0.043) & (0.038) & (0.035) & (0.113) \\ 
+  & & & & & \\ 
+\hline \\[-1.8ex] 
+Observations & 40 & 40 & 40 & 41 & 42 \\ 
+R$^{2}$ & 0.006 & 0.006 & 0.0001 & 0.014 & 0.084 \\ 
+Adjusted R$^{2}$ & $-$0.020 & $-$0.021 & $-$0.026 & $-$0.011 & 0.062 \\ 
+Residual Std. Error & 0.131 (df = 38) & 0.125 (df = 38) & 0.112 (df = 38) & 0.107 (df = 39) & 0.358 (df = 40) \\ 
+F Statistic & 0.233 (df = 1; 38) & 0.211 (df = 1; 38) & 0.003 (df = 1; 38) & 0.557 (df = 1; 39) & 3.691$^{*}$ (df = 1; 40) \\ 
+\hline 
+\hline \\[-1.8ex] 
+\textit{Note:}  & \multicolumn{5}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\ 
+\end{tabular} 
+\end{table}
+
+\% Table created by stargazer v.5.2 by Marek Hlavac, Harvard University.
+E-mail: hlavac at fas.harvard.edu \% Date and time: Wed, Apr 11, 2018 -
+12:21:30 PM
+
+\begin{table}[!htbp] \centering 
+  \caption{} 
+  \label{} 
+\begin{tabular}{@{\extracolsep{5pt}} ccccccccccccccccccccccccccccccc} 
+\\[-1.8ex]\hline 
+\hline \\[-1.8ex] 
+ & \% Table created by stargazer v.5.2 by Marek Hlavac, Harvard University. E-mail: hlavac at fas.harvard.edu & \% Date and time: Wed, Apr 11, 2018 - 12:21:30 PM & \textbackslash begin\{table\}[!htbp] \textbackslash centering  &   \textbackslash caption\{Time Dependence of Forecast Error Bias\}  &   \textbackslash label\{\}  & \textbackslash begin\{tabular\}\{@\{\textbackslash extracolsep\{5pt\}\}lccccc\}  & \textbackslash \textbackslash [-1.8ex]\textbackslash hline  & \textbackslash hline \textbackslash \textbackslash [-1.8ex]  &  & \textbackslash multicolumn\{5\}\{c\}\{\textbackslash textit\{Dependent variable:\}\} \textbackslash \textbackslash   & \textbackslash cline\{2-6\}  & \textbackslash \textbackslash [-1.8ex] & \textbackslash multicolumn\{5\}\{c\}\{February Forecast\} \textbackslash \textbackslash   & \textbackslash \textbackslash [-1.8ex] & (1) & (2) & (3) & (4) & (5)\textbackslash \textbackslash   & \textbackslash hline \textbackslash \textbackslash [-1.8ex]  &  t & 0.001 & \$-\$0.001 & \$-\$0.0001 & \$-\$0.001 & \$-\$0.009\$$\hat{\mkern6mu}$\{\textasteriskcentered \}\$ \textbackslash \textbackslash   &   & (0.002) & (0.002) & (0.002) & (0.001) & (0.005) \textbackslash \textbackslash   &   & & & & & \textbackslash \textbackslash   &  Constant & 0.098\$$\hat{\mkern6mu}$\{\textasteriskcentered \textasteriskcentered \}\$ & 0.081\$$\hat{\mkern6mu}$\{\textasteriskcentered \}\$ & 0.050 & 0.073\$$\hat{\mkern6mu}$\{\textasteriskcentered \textasteriskcentered \}\$ & 0.254\$$\hat{\mkern6mu}$\{\textasteriskcentered \textasteriskcentered \}\$ \textbackslash \textbackslash   &   & (0.045) & (0.043) & (0.038) & (0.035) & (0.113) \textbackslash \textbackslash   &   & & & & & \textbackslash \textbackslash   & \textbackslash hline \textbackslash \textbackslash [-1.8ex]  & Observations & 40 & 40 & 40 & 41 & 42 \textbackslash \textbackslash   & R\$$\hat{\mkern6mu}$\{2\}\$ & 0.006 & 0.006 & 0.0001 & 0.014 & 0.084 \textbackslash \textbackslash   & Adjusted R\$$\hat{\mkern6mu}$\{2\}\$ & \$-\$0.020 & \$-\$0.021 & \$-\$0.026 & \$-\$0.011 & 0.062 \textbackslash \textbackslash   & Residual Std. Error & 0.131 (df = 38) & 0.125 (df = 38) & 0.112 (df = 38) & 0.107 (df = 39) & 0.358 (df = 40) \textbackslash \textbackslash   & F Statistic & 0.233 (df = 1; 38) & 0.211 (df = 1; 38) & 0.003 (df = 1; 38) & 0.557 (df = 1; 39) & 3.691\$$\hat{\mkern6mu}$\{\textasteriskcentered \}\$ (df = 1; 40) \textbackslash \textbackslash   & \textbackslash hline  & \textbackslash hline \textbackslash \textbackslash [-1.8ex]  & \textbackslash textit\{Note:\}  & \textbackslash multicolumn\{5\}\{r\}\{\$$\hat{\mkern6mu}$\{\textasteriskcentered \}\$p\$\textless \$0.1; \$$\hat{\mkern6mu}$\{\textasteriskcentered \textasteriskcentered \}\$p\$\textless \$0.05; \$$\hat{\mkern6mu}$\{\textasteriskcentered \textasteriskcentered \textasteriskcentered \}\$p\$\textless \$0.01\} \textbackslash \textbackslash   & \textbackslash end\{tabular\}  & \textbackslash end\{table\}  \\ 
+\hline \\[-1.8ex] 
+\end{tabular} 
+\end{table}
+
+
+\end{document}
