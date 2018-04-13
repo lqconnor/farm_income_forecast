@@ -22,7 +22,7 @@ frm_fcst <- read_csv("./Data/forecasts_farm.csv")
 
 ###########################################################################################
 # Code Generalization.
-j = 1                                   # j==1 means uses cash income file. Otherwise it uses farm income file
+j = 11                                   # j==1 means uses cash income file. Otherwise it uses farm income file
 if(j== 1){
   inc_fcst <- csh_fcst
 } else{
@@ -31,7 +31,7 @@ if(j== 1){
 
 source("ex_ante_yld_trnd.R")
 index <- which(str_detect(colnames(inc_fcst),"Net"))                                   # Catches the variable attached to the final cash/farm income estimate
-income_estimate <- log(inc_fcst[[index]])
+inc_fcst <- mutate(inc_fcst, income_estimate = log(inc_fcst[[index]]))
 inc_fcst$trend_feb <- log(inc_fcst$trend_feb)
 inc_fcst$trend_aug <- log(inc_fcst$trend_aug)
 
@@ -68,7 +68,7 @@ summary(abs(inc_fcst$aug1_rev))
 
 #############################################################################################################
 #Remember to comment out when running the farm income file. Include when running cash income file
-inc_fcst$`August (t + 1) "estimate"`[is.na(inc_fcst$`August (t + 1) "estimate"`)] <- income_estimate[is.na(inc_fcst$`August (t + 1) "estimate"`)]
+inc_fcst$`August (t + 1) "estimate"`[is.na(inc_fcst$`August (t + 1) "estimate"`)] <- log(inc_fcst$income_estimate[is.na(inc_fcst$`August (t + 1) "estimate"`)])
 
 #############################################################################################################
 # Plot trend to visually inspect best fit
@@ -83,7 +83,7 @@ ggplot(inc_fcst, aes(y = income_estimate , x = `Reference Year`)) +
   geom_point() +
   geom_line() +
   geom_smooth(method = lm, formula = y ~ x) +
-  #geom_line(aes(y = log(`February forecast`) , x = `Reference Year`), color = "red") +
+  #geom_line(aes(y = log(`February forecast`) , x = `Reference Year`), color = "red") 
   geom_line(aes(y = log(`August forecast`) , x = `Reference Year`), color = "blue")
 
 #############################################################################################################
@@ -115,9 +115,9 @@ inc_fcst <- inc_fcst %>%
   arrange(`Reference Year`)
 
 index <- which(str_detect(colnames(inc_fcst),"Net"))                                   # Catches the variable attached to the final cash/farm income estimate
-income_estimate <- inc_fcst[[index]]
+income_estimator <- inc_fcst[[index]]
 
-incomes <- ts(income_estimate, start = c(1975, 1), end = c(2016, 1), frequency = 1)
+incomes <- ts(income_estimator, start = c(1975, 1), end = c(2016, 1), frequency = 1)
 
 bp <- breakpoints(incomes ~ 1, data = inc_fcst)
 summary(bp)
@@ -147,7 +147,7 @@ lines(ci_incomes)
 ###########################################################################################
 # Time Dependence of Forecast Error Bias
 fit <- list()                                                 # Create vector for lm() output
-tile <- which(str_detect(colnames(inc_fcst),"rev"))          # Extract column indexes with forecast error variables in the inc_fcst tibble
+tile <- which(str_detect(colnames(inc_fcst),"ehat"))          # Extract column indexes with forecast error variables in the inc_fcst tibble
 
 for (i in seq_along(tile)){
   
@@ -251,7 +251,7 @@ stargazer(fit, title = "Variance Dependence of Bias",
                              "August (t+1) Estimate"), type = 'text')
 
 ###########################################################################################
-# Variance Dependence Mean Absolute Forecast Error
+# Variance Dependence of Mean Absolute Forecast Error
 fit <- list()                                                 # Create vector for lm() output
 
 for (i in seq_along(tile)){
@@ -265,7 +265,7 @@ fit %>%
   map(summary)                                                # Iterate through the columns of fit to summarize the output from lm()
 
 # Output Tables -------------------------------------------------------------------------
-stargazer(fit, title = "Variance Dependence of Bias",
+stargazer(fit, title = "Variance Dependence of Mean Absolute Forecast Error",
           dep.var.labels = c("February Forecast", "August Forecast", 
                              "November Forecast", "February (t+1) Forecast", 
                              "August (t+1) Estimate"), type = 'text')
