@@ -44,7 +44,7 @@ inc_fcst <- mutate(inc_fcst,
                    aug_rev = (`August forecast` - `February forecast`)/`February forecast`,                              # Change in August update on February forecast
                    nov_rev = (`November forecast` - `August forecast`)/`August forecast`,                                # Change in November update on August forecast
                    feb_rev = (`February(t+1) forecast` - `November forecast`)/`November forecast`,                       # Change in February(t+1) update on November forecast 
-                   aug1_rev = (`August (t + 1) "estimate"` - `February(t+1) forecast`)/`February(t+1) forecast`,          # Change in August first estimate on February(t+1) forecast
+                   aug1_rev = (`August (t + 1) "estimate"` - `February(t+1) forecast`)/`February(t+1) forecast`,         # Change in August first estimate on February(t+1) forecast
                    final_rev = (income_estimate - `August (t + 1) "estimate"`)/`August (t + 1) "estimate"`)              # Change in final estimate on August(t+1) estimate
 
 # Generate Forecast Error -------------------------------------------------------------
@@ -60,7 +60,10 @@ inc_fcst %<>%
          t3 = t^3,
          t4 = t^4)
   
-
+summary(abs(inc_fcst$aug_rev))
+summary(abs(inc_fcst$nov_rev))
+summary(abs(inc_fcst$feb_rev))
+summary(abs(inc_fcst$aug1_rev))
 # Forecast Accuracy ----------------------------------------------------------------
 
 #############################################################################################################
@@ -74,6 +77,16 @@ ggplot(inc_fcst, aes(y = income_estimate , x = `Reference Year`)) +
   geom_line() +
   geom_smooth(method = lm, formula = y ~ x)
 
+
+# Comparison Plots
+ggplot(inc_fcst, aes(y = income_estimate , x = `Reference Year`)) +
+  geom_point() +
+  geom_line() +
+  geom_smooth(method = lm, formula = y ~ x) +
+  #geom_line(aes(y = log(`February forecast`) , x = `Reference Year`), color = "red") +
+  geom_line(aes(y = log(`August forecast`) , x = `Reference Year`), color = "blue")
+
+#############################################################################################################
 # Estimate the linear trend and get predicted trend values. 
 l_trnd <- lm(income_estimate ~ t, data = inc_fcst)
 summary(l_trnd)
