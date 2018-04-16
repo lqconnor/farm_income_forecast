@@ -23,7 +23,7 @@ feb_18 <- read_csv("./Data/farmincome_wealthstatisticsdata_february2018.csv")
 
 ###########################################################################################
 # Code Generalization.
-j = 11                                   # j==1 means uses cash income file. Otherwise it uses farm income file
+j = 1                                   # j==1 means uses cash income file. Otherwise it uses farm income file
 if(j== 1){
   inc_fcst <- csh_fcst
 } else{
@@ -41,6 +41,7 @@ inc_fcst <- mutate(inc_fcst, income_estimate = inc_fcst[[index]])
 inc_fcst$trend_feb <- log(inc_fcst$trend_feb)
 inc_fcst$trend_aug <- log(inc_fcst$trend_aug)
 inc_fcst <- select(inc_fcst,-income_estimate)
+holder <- capitalize(fl_source)            # Capitalizes the first letter of string passed to it. Done so the Y-Axis label is in all caps
 
 cathcer <- str_c("Net ",fl_source," income$")
 incy <- filter(feb_18, Year <=2016 & Year >= 1975,
@@ -101,9 +102,10 @@ ggplot(inc_fcst, aes(y = income_estimate , x = `Reference Year`)) +
   geom_point() +
   geom_line() +
   geom_smooth(method = lm, formula = y ~ x) +
-  #geom_line(aes(y = log(`February forecast`) , x = `Reference Year`), color = "red") 
-  geom_line(aes(y = log(`August forecast`) , x = `Reference Year`), color = "blue")
-
+  geom_line(aes(y = log(`February forecast`) , x = `Reference Year`), color = "red") +
+  #geom_line(aes(y = log(`August forecast`) , x = `Reference Year`), color = "blue")
+  labs(x = "Year", y = str_c("Net ",holder," Income"))
+ggsave(str_c("Plots/trend_",holder,".jpg"))
 #############################################################################################################
 # Estimate the linear trend and get predicted trend values. 
 l_trnd <- lm(income_estimate ~ t, data = inc_fcst)
@@ -136,16 +138,21 @@ index <- which(str_detect(colnames(inc_fcst),"Net"))                            
 income_estimator <- inc_fcst[[index]]
 
 incomes <- ts(income_estimator, start = c(1975, 1), end = c(2016, 1), frequency = 1)
+forecasts <- ts(inc_fcst$`February forecast`, start = c(1975, 1), end = c(2016, 1), frequency = 1) #Transform February Forecast to time series format
 
 bp <- breakpoints(incomes ~ 1, data = inc_fcst)
 summary(bp)
 
+#jpeg(filename = "Plots/struc.jpg")
 #plot(bp)
-plot(incomes)
+plot(incomes,
+     ylab= str_c("Net ",holder," Income"),
+     xlab= "Year")
 lines(bp)
-
+lines(forecasts, col = "red")                                    # Add February Forecast to structural break plot
 ci_incomes <- confint(bp)
 lines(ci_incomes)
+#dev.off()
 
 #############################################################################################################
 
