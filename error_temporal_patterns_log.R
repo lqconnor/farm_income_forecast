@@ -18,7 +18,6 @@ library(strucchange)
 #wasde <- read_csv("./Data/psd_grains_pulses.csv")
 csh_fcst <- read_csv("./Data/forecasts_cash.csv")
 frm_fcst <- read_csv("./Data/forecasts_farm.csv")
-feb_18 <- read_csv("./Data/farmincome_wealthstatisticsdata_february2018.csv")
 
 
 ###########################################################################################
@@ -30,14 +29,9 @@ if(j== 1){
   inc_fcst <- frm_fcst
 }
 
-# Catch file source descriptor
-fl_source <- names(inc_fcst)                                                           
-fl_source <- fl_source[grepl("Net", fl_source)]
-fl_source <- sub("^[[:alpha:]]+[[:blank:]]([a-z]+)[[:blank:]].+$","\\1", fl_source)    # Regular Expression to extract cash or farm portion of string
-
-source("ex_ante_yld_trnd.R")                           # Adds the one step ahead trend projection for ex-ante prediction anaysis
+source("ex_ante_yld_trnd.R")
 index <- which(str_detect(colnames(inc_fcst),"Net"))                                   # Catches the variable attached to the final cash/farm income estimate
-inc_fcst <- mutate(inc_fcst, income_estimate = inc_fcst[[index]])
+inc_fcst <- mutate(inc_fcst, income_estimate = log(inc_fcst[[index]]))
 inc_fcst$trend_feb <- log(inc_fcst$trend_feb)
 inc_fcst$trend_aug <- log(inc_fcst$trend_aug)
 
@@ -55,12 +49,12 @@ inc_fcst <- mutate(inc_fcst,
 
 # Generate Forecast Error -------------------------------------------------------------
 inc_fcst %<>%
-  mutate(ehat_feb = log(income_estimate) - log(`February forecast`),
-         ehat_aug = log(income_estimate) - log(`August forecast`),
-         ehat_nov = log(income_estimate) - log(`November forecast`),
-         ehat_feb1 = log(income_estimate) - log(`February(t+1) forecast`),
-         ehat_init = log(income_estimate) - log(`August (t + 1) "estimate"`),
-         dif = log(income_estimate) - lead(log(income_estimate)),
+  mutate(ehat_feb = income_estimate - log(`February forecast`),
+         ehat_aug = income_estimate - log(`August forecast`),
+         ehat_nov = income_estimate - log(`November forecast`),
+         ehat_feb1 = income_estimate - log(`February(t+1) forecast`),
+         ehat_init = income_estimate - log(`August (t + 1) "estimate"`),
+         dif = income_estimate - lead(income_estimate),
          t = `Reference Year` - 1974,
          t2 = t^2,
          t3 = t^3,
@@ -74,12 +68,10 @@ summary(abs(inc_fcst$aug1_rev))
 
 #############################################################################################################
 #Remember to comment out when running the farm income file. Include when running cash income file
-inc_fcst$income_estimate <- log(inc_fcst$income_estimate)
-#inc_fcst$`August (t + 1) "estimate"`[is.na(inc_fcst$`August (t + 1) "estimate"`)] <- log(inc_fcst$income_estimate[is.na(inc_fcst$`August (t + 1) "estimate"`)])
+inc_fcst$`August (t + 1) "estimate"`[is.na(inc_fcst$`August (t + 1) "estimate"`)] <- log(inc_fcst$income_estimate[is.na(inc_fcst$`August (t + 1) "estimate"`)])
 
 #############################################################################################################
 # Plot trend to visually inspect best fit
-
 ggplot(inc_fcst, aes(y = income_estimate , x = `Reference Year`)) +
   geom_point() +
   geom_line() +
@@ -239,24 +231,13 @@ stargazer(fit, title = "Mean Error Dependence on Deviation Size",
 
 
 ###########################################################################################
-cathcer <- str_c("Net ",fl_source," income$")
-incy <- filter(feb_18, Year <=2016 & Year >= 1971,
-               State == "US",
-               str_detect(VariableDescriptionTotal, cathcer)) %>%
-  mutate(income_estimate =log(round(Amount/1000000, digits = 2)))
-  
-
-inc_fcst %<>%
-  mutate(rl_mn = rollmean(incy$income_estimate, 5),
-         rl_vr = rollapply(incy$income_estimate, 5, sd))
-
 # Variance Dependence of Bias
 fit <- list()                                                 # Create vector for lm() output
 
 for (i in seq_along(tile)){
   
   eht_idx <- tile[i]                                            # Get column index of forecast variables from tile 
-  fit[[i]] <- lm(inc_fcst[[eht_idx]]~ rl_vr, data = inc_fcst)        # Perform intercept regression on each forecast error column. Put output into fit
+  fit[[i]] <- lm(inc_fcst[[eht_idx]]~ var, data = inc_fcst)        # Perform intercept regression on each forecast error column. Put output into fit
   
 }
 
@@ -276,7 +257,7 @@ fit <- list()                                                 # Create vector fo
 for (i in seq_along(tile)){
   
   eht_idx <- tile[i]                                            # Get column index of forecast variables from tile 
-  fit[[i]] <- lm(abs(inc_fcst[[eht_idx]])~ rl_vr, data = inc_fcst)        # Perform intercept regression on each forecast error column. Put output into fit
+  fit[[i]] <- lm(abs(inc_fcst[[eht_idx]])~ var, data = inc_fcst)        # Perform intercept regression on each forecast error column. Put output into fit
   
 }
 
@@ -288,9 +269,4 @@ stargazer(fit, title = "Variance Dependence of Mean Absolute Forecast Error",
           dep.var.labels = c("February Forecast", "August Forecast", 
                              "November Forecast", "February (t+1) Forecast", 
                              "August (t+1) Estimate"), type = 'text')
-
-fit <- lm(rl_vr ~  t, data = inc_fcst)
-summary(fit)
-stargazer(fit, type = 'text')
-
 
