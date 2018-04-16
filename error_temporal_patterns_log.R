@@ -18,16 +18,22 @@ library(strucchange)
 #wasde <- read_csv("./Data/psd_grains_pulses.csv")
 csh_fcst <- read_csv("./Data/forecasts_cash.csv")
 frm_fcst <- read_csv("./Data/forecasts_farm.csv")
+feb_18 <- read_csv("./Data/farmincome_wealthstatisticsdata_february2018.csv")
 
 
 ###########################################################################################
 # Code Generalization.
-j = 1                                   # j==1 means uses cash income file. Otherwise it uses farm income file
+j = 11                                   # j==1 means uses cash income file. Otherwise it uses farm income file
 if(j== 1){
   inc_fcst <- csh_fcst
 } else{
   inc_fcst <- frm_fcst
 }
+
+# Catch file source descriptor
+fl_source <- names(inc_fcst)                                                           
+fl_source <- fl_source[grepl("Net", fl_source)]
+fl_source <- sub("^[[:alpha:]]+[[:blank:]]([a-z]+)[[:blank:]].+$","\\1", fl_source)    # Regular Expression to extract cash or farm portion of string
 
 source("ex_ante_yld_trnd.R")                           # Adds the one step ahead trend projection for ex-ante prediction anaysis
 index <- which(str_detect(colnames(inc_fcst),"Net"))                                   # Catches the variable attached to the final cash/farm income estimate
@@ -233,9 +239,16 @@ stargazer(fit, title = "Mean Error Dependence on Deviation Size",
 
 
 ###########################################################################################
-inc_fcst <- filter(inc_fcst, `Reference Year` >= 1979) %>%
-  mutate(rl_mn = rollmean(inc_fcst$income_estimate, 5),
-         rl_vr = rollapply(inc_fcst$income_estimate, 5, sd))
+cathcer <- str_c("Net ",fl_source," income$")
+incy <- filter(feb_18, Year <=2016 & Year >= 1971,
+               State == "US",
+               str_detect(VariableDescriptionTotal, cathcer)) %>%
+  mutate(income_estimate =log(round(Amount/1000000, digits = 2)))
+  
+
+inc_fcst %<>%
+  mutate(rl_mn = rollmean(incy$income_estimate, 5),
+         rl_vr = rollapply(incy$income_estimate, 5, sd))
 
 # Variance Dependence of Bias
 fit <- list()                                                 # Create vector for lm() output
