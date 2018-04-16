@@ -40,6 +40,16 @@ index <- which(str_detect(colnames(inc_fcst),"Net"))                            
 inc_fcst <- mutate(inc_fcst, income_estimate = inc_fcst[[index]])
 inc_fcst$trend_feb <- log(inc_fcst$trend_feb)
 inc_fcst$trend_aug <- log(inc_fcst$trend_aug)
+inc_fcst <- select(inc_fcst,-income_estimate)
+
+cathcer <- str_c("Net ",fl_source," income$")
+incy <- filter(feb_18, Year <=2016 & Year >= 1975,
+               State == "US",
+               str_detect(VariableDescriptionTotal, cathcer)) %>%
+  mutate(income_estimate = round(Amount/1000000, digits = 2)) %>%
+  select(Year, income_estimate)
+inc_fcst <- left_join(inc_fcst, incy, by = c("Reference Year" = "Year"))
+
 
 #inc_fcst$trend_feb <- income_estimate
 #inc_fcst$trend_aug <- income_estimate
@@ -248,7 +258,8 @@ incy <- filter(feb_18, Year <=2016 & Year >= 1971,
 
 inc_fcst %<>%
   mutate(rl_mn = rollmean(incy$income_estimate, 5),
-         rl_vr = rollapply(incy$income_estimate, 5, sd))
+         rl_vr = rollapply(incy$income_estimate, 5, sd)) %>%
+  filter(`Reference Year` > 1980)
 
 # Variance Dependence of Bias
 fit <- list()                                                 # Create vector for lm() output
