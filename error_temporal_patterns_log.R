@@ -13,6 +13,7 @@ library(magrittr)
 library(ggplot2)
 library(stargazer)
 library(strucchange)
+library(Hmisc)
 
 # Data Import ---------------------------------
 #wasde <- read_csv("./Data/psd_grains_pulses.csv")
@@ -23,7 +24,7 @@ feb_18 <- read_csv("./Data/farmincome_wealthstatisticsdata_february2018.csv")
 
 ###########################################################################################
 # Code Generalization.
-j = 1                                   # j==1 means uses cash income file. Otherwise it uses farm income file
+j = 11                                   # j==1 means uses cash income file. Otherwise it uses farm income file
 if(j== 1){
   inc_fcst <- csh_fcst
 } else{
@@ -105,7 +106,7 @@ ggplot(inc_fcst, aes(y = income_estimate , x = `Reference Year`)) +
   geom_line(aes(y = log(`February forecast`) , x = `Reference Year`), color = "red") +
   #geom_line(aes(y = log(`August forecast`) , x = `Reference Year`), color = "blue")
   labs(x = "Year", y = str_c("Net ",holder," Income"))
-ggsave(str_c("Plots/trend_",holder,".jpg"))
+ggsave(str_c("Plots/trend_",fl_source,".jpg"))
 #############################################################################################################
 # Estimate the linear trend and get predicted trend values. 
 l_trnd <- lm(income_estimate ~ t, data = inc_fcst)
@@ -266,7 +267,7 @@ incy <- filter(feb_18, Year <=2016 & Year >= 1971,
 inc_fcst %<>%
   mutate(rl_mn = rollmean(incy$income_estimate, 5),
          rl_vr = rollapply(incy$income_estimate, 5, sd)) %>%
-  filter(`Reference Year` > 1980)
+  filter(`Reference Year` > 1975)
 
 # Variance Dependence of Bias
 fit <- list()                                                 # Create vector for lm() output
@@ -311,4 +312,51 @@ fit <- lm(rl_vr ~  t, data = inc_fcst)
 summary(fit)
 stargazer(fit, type = 'text')
 
+###########################################################################################
+# Structural break tests
+inc_fcst <- rename(inc_fcst, year = `Reference Year`)
+inc_fcst <- mutate(inc_fcst, y1984 = factor(year == 1984),
+                   y2002 = factor(year == 2002),
+                   y2010 = factor(year == 2010))
 
+fit <- list()                                                 # Create vector for lm() output
+
+for (i in seq_along(tile)){
+  
+  eht_idx <- tile[i]                                            # Get column index of forecast variables from tile 
+  fit[[i]] <- lm(abs(inc_fcst[[eht_idx]]) ~ y1984 + y2002 + y2010 + lag(y1984, n=1) + lag(y2002, n=1) + lag(y2010, n=1) + lead(y1984) + lead(y2002) + lead(y2010) + lag(y1984, n=2) + lag(y2002, n=2) + lag(y2010, n=2), data = inc_fcst)        # Perform intercept regression on each forecast error column. Put output into fit
+  
+}
+
+fit %>%                                                       
+  map(summary)                                                # Iterate through the columns of fit to summarize the output from lm()
+
+# Output Tables -------------------------------------------------------------------------
+stargazer(fit, title = "Variance Dependence of Mean Absolute Forecast Error",
+          dep.var.labels = c("February Forecast", "August Forecast", 
+                             "November Forecast", "February (t+1) Forecast", 
+                             "August (t+1) Estimate"), type = 'text')
+
+###########################################################################################
+# Variance Dependence of Mean Absolute Forecast Error
+fit <- list()                                                 # Create vector for lm() output
+
+for (i in seq_along(tile)){
+  
+  eht_idx <- tile[i]                                            # Get column index of forecast variables from tile 
+  fit[[i]] <- lm(abs(inc_fcst[[eht_idx]])~ t + rl_vr + rl_mn + lag(y1984, n=1) + lag(y2002, n=1) + lag(y2010, n=1), data = inc_fcst)        # Perform intercept regression on each forecast error column. Put output into fit
+  
+}
+
+fit %>%                                                       
+  map(summary)                                                # Iterate through the columns of fit to summarize the output from lm()
+
+# Output Tables -------------------------------------------------------------------------
+stargazer(fit, title = "Variance Dependence of Mean Absolute Forecast Error",
+          dep.var.labels = c("February Forecast", "August Forecast", 
+                             "November Forecast", "February (t+1) Forecast", 
+                             "August (t+1) Estimate"), type = 'text')
+
+fit <- lm(rl_vr ~  t, data = inc_fcst)
+summary(fit)
+stargazer(fit, type = 'text')
