@@ -24,7 +24,7 @@ feb_18 <- read_csv("./Data/farmincome_wealthstatisticsdata_february2018.csv")
 
 ###########################################################################################
 # Code Generalization.
-j = 11                                   # j==1 means uses cash income file. Otherwise it uses farm income file
+j = 1                                   # j==1 means uses cash income file. Otherwise it uses farm income file
 if(j== 1){
   inc_fcst <- csh_fcst
 } else{
@@ -140,6 +140,9 @@ income_estimator <- inc_fcst[[index]]
 
 incomes <- ts(log(income_estimator), start = c(1975, 1), end = c(2016, 1), frequency = 1)
 forecasts <- ts(log(inc_fcst$`February forecast`), start = c(1975, 1), end = c(2016, 1), frequency = 1) #Transform February Forecast to time series format
+forecasts_a <- ts(log(inc_fcst$`August forecast`), start = c(1975, 1), end = c(2016, 1), frequency = 1)
+forecasts_n <- ts(log(inc_fcst$`November forecast`), start = c(1975, 1), end = c(2016, 1), frequency = 1)
+forecasts_f <- ts(log(inc_fcst$`February(t+1) forecast`), start = c(1975, 1), end = c(2016, 1), frequency = 1)
 
 bp <- breakpoints(incomes ~ 1, data = inc_fcst)
 summary(bp)
@@ -151,6 +154,9 @@ plot(incomes,
      xlab= "Year")
 lines(bp)
 lines(forecasts, col = "red")                                    # Add February Forecast to structural break plot
+# lines(forecasts_a, col = "blue") 
+# lines(forecasts_n, col = "green") 
+# lines(forecasts_f, col = "purple") 
 ci_incomes <- confint(bp)
 lines(ci_incomes)
 #dev.off()
@@ -178,7 +184,7 @@ tile <- which(str_detect(colnames(inc_fcst),"ehat"))          # Extract column i
 for (i in seq_along(tile)){
   
   eht_idx <- tile[i]                                            # Get column index of forecast variables from tile 
-  fit[[i]] <- lm(inc_fcst[[eht_idx]]~ t, data = inc_fcst)        # Perform intercept regression on each forecast error column. Put output into fit
+  fit[[i]] <- lm(inc_fcst[[eht_idx]]~ 1, data = inc_fcst)        # Perform intercept regression on each forecast error column. Put output into fit
   
 }
 
@@ -317,7 +323,7 @@ stargazer(fit, title = "Variance Dependence of Mean Absolute Forecast Error",
                              "November Forecast", "February (t+1) Forecast", 
                              "August (t+1) Estimate"), type = 'text')
 
-fit <- lm(rl_vr ~  t, data = inc_fcst)
+fit <- lm(rl_vr ~  1, data = inc_fcst)
 summary(fit)
 stargazer(fit, type = 'text')
 
