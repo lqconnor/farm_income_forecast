@@ -24,7 +24,7 @@ feb_18 <- read_csv("./Data/farmincome_wealthstatisticsdata_february2018.csv")
 
 ###########################################################################################
 # Code Generalization.
-j = 1                                   # j==1 means uses cash income file. Otherwise it uses farm income file
+j = 11                                   # j==1 means uses cash income file. Otherwise it uses farm income file
 if(j== 1){
   inc_fcst <- csh_fcst
 } else{
@@ -109,19 +109,19 @@ ggplot(inc_fcst, aes(y = log(income_estimate) , x = `Reference Year`)) +
 ggsave(str_c("Plots/trend_",fl_source,".jpg"))
 #############################################################################################################
 # Estimate the linear trend and get predicted trend values. 
-l_trnd <- lm(income_estimate ~ t, data = inc_fcst)
+l_trnd <- lm(log(income_estimate) ~ t, data = inc_fcst)
 summary(l_trnd)
 
 inc_fcst$yhat <- predict(l_trnd, inc_fcst)
-#inc_fcst$var <- l_trnd$resid^2
+inc_fcst$resid <- l_trnd$resid^2
 
 trnd <- lm(income_estimate ~ t, data = inc_fcst)
 summary(trnd)
 inc_fcst$yhat_actual <- predict(trnd, inc_fcst)
 # Produce indicator variables for large negative and positive estimates.
 inc_fcst <- inc_fcst %>%
-  mutate(delta = income_estimate - yhat,
-         deviation = income_estimate - yhat_actual,
+  mutate(delta = log(income_estimate) - yhat,
+         deviation = log(income_estimate) - yhat_actual,
          var = deviation^2,
          large = factor(delta > 0.1),
          small = factor(delta < -0.1))
@@ -262,11 +262,20 @@ incy <- filter(feb_18, Year <=2016 & Year >= 1971,
                State == "US",
                str_detect(VariableDescriptionTotal, cathcer)) %>%
   mutate(income_estimate =log(round(Amount/1000000, digits = 2)))
-  
 
+incy <- mutate(incy, t = Year-1970,
+               t2 = t^2)
+l_trnd <- lm(income_estimate ~ t, data = incy)
+summary(l_trnd)
+
+incy$resid <- l_trnd$resid
+amount <- incy$income_estimate[incy$Year == 2016]
+incy <- mutate(incy, resid2 = amount*(1+(resid/income_estimate)))  
+
+# Replace rollapply function with resid2 to get detrended estiamte. Think about which one is more correct. Hard to say right now.
 inc_fcst %<>%
   mutate(rl_mn = rollmean(incy$income_estimate, 5),
-         rl_vr = rollapply(incy$income_estimate, 5, sd)) %>%
+         rl_vr = rollapply(incy$resid2, 5, sd)) %>%
   filter(`Reference Year` > 1975)
 
 # Variance Dependence of Bias
