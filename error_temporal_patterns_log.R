@@ -24,7 +24,7 @@ feb_18 <- read_csv("./Data/farmincome_wealthstatisticsdata_february2018.csv")
 
 ###########################################################################################
 # Code Generalization.
-j = 11                                   # j==1 means uses cash income file. Otherwise it uses farm income file
+j = 1                                   # j==1 means uses cash income file. Otherwise it uses farm income file
 if(j== 1){
   inc_fcst <- csh_fcst
 } else{
@@ -86,20 +86,20 @@ summary(abs(inc_fcst$aug1_rev))
 
 #############################################################################################################
 #Remember to comment out when running the farm income file. Include when running cash income file
-inc_fcst$income_estimate <- log(inc_fcst$income_estimate)
+#inc_fcst$income_estimate <- log(inc_fcst$income_estimate)
 #inc_fcst$`August (t + 1) "estimate"`[is.na(inc_fcst$`August (t + 1) "estimate"`)] <- log(inc_fcst$income_estimate[is.na(inc_fcst$`August (t + 1) "estimate"`)])
 
 #############################################################################################################
 # Plot trend to visually inspect best fit
 
-ggplot(inc_fcst, aes(y = income_estimate , x = `Reference Year`)) +
+ggplot(inc_fcst, aes(y = log(income_estimate) , x = `Reference Year`)) +
   geom_point() +
   geom_line() +
   geom_smooth(method = lm, formula = y ~ x)
 
 
 # Comparison Plots
-ggplot(inc_fcst, aes(y = income_estimate , x = `Reference Year`)) +
+ggplot(inc_fcst, aes(y = log(income_estimate) , x = `Reference Year`)) +
   geom_point() +
   geom_line() +
   geom_smooth(method = lm, formula = y ~ x) +
@@ -138,13 +138,13 @@ inc_fcst <- inc_fcst %>%
 index <- which(str_detect(colnames(inc_fcst),"Net"))                                   # Catches the variable attached to the final cash/farm income estimate
 income_estimator <- inc_fcst[[index]]
 
-incomes <- ts(income_estimator, start = c(1975, 1), end = c(2016, 1), frequency = 1)
-forecasts <- ts(inc_fcst$`February forecast`, start = c(1975, 1), end = c(2016, 1), frequency = 1) #Transform February Forecast to time series format
+incomes <- ts(log(income_estimator), start = c(1975, 1), end = c(2016, 1), frequency = 1)
+forecasts <- ts(log(inc_fcst$`February forecast`), start = c(1975, 1), end = c(2016, 1), frequency = 1) #Transform February Forecast to time series format
 
 bp <- breakpoints(incomes ~ 1, data = inc_fcst)
 summary(bp)
 
-#jpeg(filename = "Plots/struc.jpg")
+#tiff(filename = str_c("Plots/struc_",fl_source,".tiff"), width = 820, height = 550)
 #plot(bp)
 plot(incomes,
      ylab= str_c("Net ",holder," Income"),
@@ -356,7 +356,3 @@ stargazer(fit, title = "Variance Dependence of Mean Absolute Forecast Error",
           dep.var.labels = c("February Forecast", "August Forecast", 
                              "November Forecast", "February (t+1) Forecast", 
                              "August (t+1) Estimate"), type = 'text')
-
-fit <- lm(rl_vr ~  t, data = inc_fcst)
-summary(fit)
-stargazer(fit, type = 'text')
