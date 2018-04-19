@@ -24,7 +24,7 @@ feb_18 <- read_csv("./Data/farmincome_wealthstatisticsdata_february2018.csv")
 
 ###########################################################################################
 # Code Generalization.
-j = 1                                   # j==1 means uses cash income file. Otherwise it uses farm income file
+j = 11                                   # j==1 means uses cash income file. Otherwise it uses farm income file
 if(j== 1){
   inc_fcst <- csh_fcst
 } else{
@@ -162,7 +162,9 @@ lines(forecasts, col = "red")                                    # Add February 
 # lines(forecasts_n, col = "green") 
 # lines(forecasts_f, col = "purple") 
 ci_incomes <- confint(bp)
+cif_incomes <- confint(bpf)
 lines(ci_incomes)
+lines(cif_incomes, col = "red")
 #dev.off()
 
 #############################################################################################################
