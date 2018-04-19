@@ -147,12 +147,16 @@ forecasts_f <- ts(log(inc_fcst$`February(t+1) forecast`), start = c(1975, 1), en
 bp <- breakpoints(incomes ~ 1, data = inc_fcst)
 summary(bp)
 
+bpf <- breakpoints(forecasts ~ 1, data = inc_fcst)
+summary(bpf)
+  
 #tiff(filename = str_c("Plots/struc_",fl_source,".tiff"), width = 820, height = 550)
 #plot(bp)
 plot(incomes,
      ylab= str_c("Net ",holder," Income"),
      xlab= "Year")
-lines(bp)
+#lines(bp)
+#lines(bpf, col= "red")
 lines(forecasts, col = "red")                                    # Add February Forecast to structural break plot
 # lines(forecasts_a, col = "blue") 
 # lines(forecasts_n, col = "green") 
