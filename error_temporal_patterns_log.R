@@ -184,13 +184,16 @@ lines(cif_incomes, col = "red")
 
 ###########################################################################################
 # Time Dependence of Forecast Error Bias
+inc_fcst <- mutate(inc_fcst, high = as.numeric(dif >= 0),
+                   dif_upp = high*dif,
+                   dif_low = (1-high)*dif)
 fit <- list()                                                 # Create vector for lm() output
 tile <- which(str_detect(colnames(inc_fcst),"ehat"))          # Extract column indexes with forecast error variables in the inc_fcst tibble
 
 for (i in seq_along(tile)){
   
   eht_idx <- tile[i]                                            # Get column index of forecast variables from tile 
-  fit[[i]] <- lm(inc_fcst[[eht_idx]]~ t, data = inc_fcst)        # Perform intercept regression on each forecast error column. Put output into fit
+  fit[[i]] <- lm(inc_fcst[[eht_idx]]~ dif_upp*delta + dif_low*delta, data = inc_fcst)        # Perform intercept regression on each forecast error column. Put output into fit
   
 }
 
@@ -212,7 +215,7 @@ fit <- list()                                                 # Create vector fo
 for (i in seq_along(tile)){
   
   eht_idx <- tile[i]                                            # Get column index of forecast variables from tile 
-  fit[[i]] <- lm(abs(inc_fcst[[eht_idx]]) ~ t, data = inc_fcst)        # Perform intercept regression on each forecast error column. Put output into fit
+  fit[[i]] <- lm(abs(inc_fcst[[eht_idx]]) ~ dif_upp*delta + dif_low*delta, data = inc_fcst)        # Perform intercept regression on each forecast error column. Put output into fit
   
 }
 
@@ -296,7 +299,7 @@ fit <- list()                                                 # Create vector fo
 for (i in seq_along(tile)){
   
   eht_idx <- tile[i]                                            # Get column index of forecast variables from tile 
-  fit[[i]] <- lm(inc_fcst[[eht_idx]]~ rl_vr, data = inc_fcst)        # Perform intercept regression on each forecast error column. Put output into fit
+  fit[[i]] <- lm(inc_fcst[[eht_idx]]~ dif_upp + dif_low, data = inc_fcst)        # Perform intercept regression on each forecast error column. Put output into fit
   
 }
 
@@ -321,7 +324,7 @@ fit <- list()                                                 # Create vector fo
 for (i in seq_along(tile)){
   
   eht_idx <- tile[i]                                            # Get column index of forecast variables from tile 
-  fit[[i]] <- lm(abs(inc_fcst[[eht_idx]])~ rl_vr, data = inc_fcst)        # Perform intercept regression on each forecast error column. Put output into fit
+  fit[[i]] <- lm(abs(inc_fcst[[eht_idx]])~ rl_mn*dif_upp + rl_mn*dif_low, data = inc_fcst)        # Perform intercept regression on each forecast error column. Put output into fit
   
 }
 
