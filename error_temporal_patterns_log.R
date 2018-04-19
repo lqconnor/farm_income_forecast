@@ -273,7 +273,7 @@ cathcer <- str_c("Net ",fl_source," income$")
 incy <- filter(feb_18, Year <=2016 & Year >= 1971,
                State == "US",
                str_detect(VariableDescriptionTotal, cathcer)) %>%
-  mutate(income_estimate =round(Amount/1000000, digits = 2))
+  mutate(income_estimate =log(round(Amount/1000000, digits = 2)))
 
 incy <- mutate(incy, t = Year-1970,
                t2 = t^2)
