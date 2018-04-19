@@ -190,7 +190,7 @@ tile <- which(str_detect(colnames(inc_fcst),"ehat"))          # Extract column i
 for (i in seq_along(tile)){
   
   eht_idx <- tile[i]                                            # Get column index of forecast variables from tile 
-  fit[[i]] <- lm(inc_fcst[[eht_idx]]~ 1, data = inc_fcst)        # Perform intercept regression on each forecast error column. Put output into fit
+  fit[[i]] <- lm(inc_fcst[[eht_idx]]~ t, data = inc_fcst)        # Perform intercept regression on each forecast error column. Put output into fit
   
 }
 
@@ -273,7 +273,7 @@ cathcer <- str_c("Net ",fl_source," income$")
 incy <- filter(feb_18, Year <=2016 & Year >= 1971,
                State == "US",
                str_detect(VariableDescriptionTotal, cathcer)) %>%
-  mutate(income_estimate =log(round(Amount/1000000, digits = 2)))
+  mutate(income_estimate =round(Amount/1000000, digits = 2))
 
 incy <- mutate(incy, t = Year-1970,
                t2 = t^2)
@@ -281,13 +281,13 @@ l_trnd <- lm(income_estimate ~ t, data = incy)
 summary(l_trnd)
 
 incy$resid <- l_trnd$resid
-amount <- incy$income_estimate[incy$Year == 2016]
+amount <- incy$income_estimate[incy$Year == 1995]
 incy <- mutate(incy, resid2 = amount*(1+(resid/income_estimate)))  
 
 # Replace rollapply function with resid2 to get detrended estiamte. Think about which one is more correct. Hard to say right now.
 inc_fcst %<>%
   mutate(rl_mn = rollmean(incy$income_estimate, 5),
-         rl_vr = rollapply(incy$resid2, 5, sd)) %>%
+         rl_vr = rollapply(incy$income_estimate, 5, sd)) %>%
   filter(`Reference Year` > 1975)
 
 # Variance Dependence of Bias
@@ -309,6 +309,11 @@ stargazer(fit, title = "Variance Dependence of Bias",
                              "November Forecast", "February (t+1) Forecast", 
                              "August (t+1) Estimate"), type = 'text')
 
+
+
+ggplot(data = incy, aes(x= Year, y = resid2)) +
+  geom_line() +
+  geom_smooth()
 ###########################################################################################
 # Variance Dependence of Mean Absolute Forecast Error
 fit <- list()                                                 # Create vector for lm() output
