@@ -187,6 +187,10 @@ lines(cif_incomes, col = "red")
 inc_fcst <- mutate(inc_fcst, high = as.numeric(dif >= 0),
                    dif_upp = high*dif,
                    dif_low = (1-high)*dif)
+
+#inc_fcst <- filter(inc_fcst, `Reference Year` < 1984)
+#inc_fcst <- filter(inc_fcst, `Reference Year` >= 1984 & `Reference Year` <= 2000)
+#inc_fcst <- filter(inc_fcst, `Reference Year` >= 2004)
 fit <- list()                                                 # Create vector for lm() output
 tile <- which(str_detect(colnames(inc_fcst),"ehat"))          # Extract column indexes with forecast error variables in the inc_fcst tibble
 
