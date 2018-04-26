@@ -34,14 +34,14 @@ inc_fcst$trend_aug <- 0
 
 for (i in 1976:2016) {
   
-inc_fcst$new = inc_fcst[[indx]]
-inc_fcst$new[inc_fcst$`Reference Year`== i] <- inc_fcst$`February(t+1) forecast`[inc_fcst$`Reference Year`== i]
-inc_fcst$new[inc_fcst$`Reference Year`== i-1] <- inc_fcst$`August (t + 1) "estimate"`[inc_fcst$`Reference Year`== i-1]
-t <- inc_fcst$`Reference Year`[inc_fcst$`Reference Year`<= i]
-inc_est <- inc_fcst$new[inc_fcst$`Reference Year`<= i]
+inc_fcst$new = inc_fcst[[indx]]                                                                                          # Set new column to equal the final USDA income estimates
+inc_fcst$new[inc_fcst$`Reference Year`== i] <- inc_fcst$`February(t+1) forecast`[inc_fcst$`Reference Year`== i]          # Set the current year equal to the previous February(t+1) forecast
+inc_fcst$new[inc_fcst$`Reference Year`== i-1] <- inc_fcst$`August (t + 1) "estimate"`[inc_fcst$`Reference Year`== i-1]   # Replace the previous estimate with August(t+1) estimate of prior year
+t <- inc_fcst$`Reference Year`[inc_fcst$`Reference Year`<= i]                                                            # Make object with only the values of time up to the current year
+inc_est <- inc_fcst$new[inc_fcst$`Reference Year`<= i]                                                                   # Make object with estimates up to the current year
 fit <- lm(inc_est ~ t)
 summary(fit)
-inc_fcst$trend_feb[inc_fcst$`Reference Year`== i] <- summary(fit)$coefficients[1,1] + summary(fit)$coefficients[2,1]*i
+inc_fcst$trend_feb[inc_fcst$`Reference Year`== i] <- summary(fit)$coefficients[1,1] + summary(fit)$coefficients[2,1]*i   # Replace value of feb_trend with predicted value in the current year
 
 }
 

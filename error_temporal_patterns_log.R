@@ -303,7 +303,7 @@ fit <- list()                                                 # Create vector fo
 for (i in seq_along(tile)){
   
   eht_idx <- tile[i]                                            # Get column index of forecast variables from tile 
-  fit[[i]] <- lm(inc_fcst[[eht_idx]]~ dif_upp + dif_low, data = inc_fcst)        # Perform intercept regression on each forecast error column. Put output into fit
+  fit[[i]] <- lm(inc_fcst[[eht_idx]]~ rl_mn*dif_upp + rl_mn*dif_low, data = inc_fcst)        # Perform intercept regression on each forecast error column. Put output into fit
   
 }
 
@@ -357,7 +357,7 @@ fit <- list()                                                 # Create vector fo
 for (i in seq_along(tile)){
   
   eht_idx <- tile[i]                                            # Get column index of forecast variables from tile 
-  fit[[i]] <- lm(abs(inc_fcst[[eht_idx]]) ~ y1984 + y2002 + y2010 + lag(y1984, n=1) + lag(y2002, n=1) + lag(y2010, n=1) + lead(y1984) + lead(y2002) + lead(y2010) + lag(y1984, n=2) + lag(y2002, n=2) + lag(y2010, n=2), data = inc_fcst)        # Perform intercept regression on each forecast error column. Put output into fit
+  fit[[i]] <- lm(inc_fcst[[eht_idx]] ~  y2002 + lag(y2002, n=1) + lag(y2002, n=2) + lag(y2002, n=3)  + lead(y2002, n=1) + lead(y2002, n=2) + lead(y2002, n=3), data = inc_fcst)        # Perform intercept regression on each forecast error column. Put output into fit
   
 }
 
@@ -389,3 +389,7 @@ stargazer(fit, title = "Variance Dependence of Mean Absolute Forecast Error",
           dep.var.labels = c("February Forecast", "August Forecast", 
                              "November Forecast", "February (t+1) Forecast", 
                              "August (t+1) Estimate"), type = 'text')
+
+#########################################################################################
+
+
