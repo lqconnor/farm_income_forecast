@@ -103,4 +103,5 @@ inc_fcst <- filter(inc_fcst, `Reference Year` > 1990 & `Reference Year` <= 2018)
 
 ggplot(data = inc_fcst) +
   geom_line(aes(x = `Reference Year`, y = ohio_estimate)) +
-  geom_line(aes(x = `Reference Year`, y = ohio_f), color = "red")
+  geom_line(aes(x = `Reference Year`, y = ohio_f), color = "red") +
+  labs(x = "Year", y = "Forecast Value")
