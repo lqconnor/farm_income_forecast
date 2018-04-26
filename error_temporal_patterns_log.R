@@ -208,7 +208,7 @@ fit %>%
 stargazer(fit, title = "Time Dependence of Forecast Error Bias",
           dep.var.labels = c("February Forecast", "August Forecast", 
                              "November Forecast", "February (t+1) Forecast", 
-                             "August (t+1) Estimate"), type = 'text')
+                             "August (t+1) Estimate"), type = 'latex')
 
 #fit <- lm(final_rev ~ aug1_rev + delta, data = inc_fcst)
 #summary(fit)

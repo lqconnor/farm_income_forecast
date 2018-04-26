@@ -73,7 +73,7 @@ summary(trend)
 
 # Five Year rolling forecast
 j = 5
-for (i in 1990:2016) {
+for (i in 1980:2016) {
   oh_est <- inc_fcst$ohio_estimate[inc_fcst$`Reference Year` <= i & inc_fcst$`Reference Year` >= i-j]
   
   aug_est <- inc_fcst$`August (t + 1) "estimate"`[inc_fcst$`Reference Year` <= i & inc_fcst$`Reference Year` >= i-j]
@@ -98,7 +98,7 @@ inc_fcst$ohio[inc_fcst$`Reference Year`== 2018] <- summary(trend)$coefficients[1
   summary(trend)$coefficients[3,1]*log(inc_fcst$`August (t + 1) "estimate"`[inc_fcst$`Reference Year` == 2016])
 
 inc_fcst <- mutate(inc_fcst, ohio_f = exp(ohio))
-inc_fcst <- filter(inc_fcst, `Reference Year` > 1990 & `Reference Year` <= 2018)
+inc_fcst <- filter(inc_fcst, `Reference Year` > 1980 & `Reference Year` <= 2018)
 
 
 ggplot(data = inc_fcst) +
